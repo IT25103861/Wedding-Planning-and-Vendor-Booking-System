@@ -22,7 +22,7 @@ public class AdminController {
     public ResponseEntity<AdminDTO> createAdmin(@RequestBody AdminDTO dto) {
 
         AdminDTO admin = new AdminDTO();
-        admin.setId(dto.getId()); // ✅ MANUAL ID
+        admin.setId(dto.getId());
         admin.setUsername(dto.getUsername());
         admin.setName(dto.getName());
         admin.setEmail(dto.getEmail());
