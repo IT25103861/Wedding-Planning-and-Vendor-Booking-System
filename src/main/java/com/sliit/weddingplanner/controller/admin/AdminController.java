@@ -30,19 +30,19 @@ public class AdminController {
         admin.setRole(dto.getRole());
         admin.setCreatedAt(dto.getCreatedAt());
 
-        AdminDTO created = adminService.createAdmin(admin);
+        AdminDTO created = adminService.createUser(admin);
         return new ResponseEntity<>(created, HttpStatus.CREATED);
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<AdminDTO> getAdminById(@PathVariable int id) {
-        AdminDTO admin = adminService.getAdminById(id);
+        AdminDTO admin = adminService.getUserById(id);
         return ResponseEntity.ok(admin);
     }
 
     @GetMapping("/all")
     public ResponseEntity<List<AdminDTO>> getAllAdmins() {
-        return ResponseEntity.ok(adminService.getAllAdmins());
+        return ResponseEntity.ok(adminService.getAllUsers());
     }
 
     @PutMapping("/update/{id}")
@@ -50,12 +50,12 @@ public class AdminController {
             @PathVariable int id,
             @RequestBody AdminDTO adminDTO) {
 
-        return ResponseEntity.ok(adminService.updateAdmin(id, adminDTO));
+        return ResponseEntity.ok(adminService.updateUser(id, adminDTO));
     }
 
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<String> deleteAdmin(@PathVariable int id) {
-        adminService.deleteAdmin(id);
+        adminService.deleteUser(id);
         return ResponseEntity.ok("Admin deleted successfully. ID: " + id);
     }
 

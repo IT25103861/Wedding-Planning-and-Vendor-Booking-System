@@ -17,7 +17,7 @@ public class AdminServiceImpl implements AdminService {
     }
 
     @Override
-    public AdminDTO createAdmin(AdminDTO adminDTO) {
+    public AdminDTO createUser(AdminDTO adminDTO) {
 
         if (adminDTO.getId() <= 0) {
             throw new RuntimeException("ID must be provided manually");
@@ -40,24 +40,24 @@ public class AdminServiceImpl implements AdminService {
     }
 
     @Override
-    public AdminDTO getAdminById(int id) {
+    public AdminDTO getUserById(int id) {
         return adminRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Admin not found"));
     }
 
     @Override
-    public List<AdminDTO> getAllAdmins() {
+    public List<AdminDTO> getAllUsers() {
         return adminRepository.findAll();
     }
 
     @Override
-    public AdminDTO updateAdmin(int id, AdminDTO dto) {
+    public AdminDTO updateUser(int id, AdminDTO dto) {
         dto.setId(id);
         return adminRepository.update(dto);
     }
 
     @Override
-    public void deleteAdmin(int id) {
+    public void deleteUser(int id) {
         adminRepository.delete(id);
     }
 }
