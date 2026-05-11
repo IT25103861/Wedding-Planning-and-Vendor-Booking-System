@@ -1,4 +1,4 @@
-package com.sliit.weddingplanner.controller.admin;
+package com.sliit.weddingplanner.controller;
 
 import com.sliit.weddingplanner.dto.CustomerDTO;
 import com.sliit.weddingplanner.service.CustomerService;
