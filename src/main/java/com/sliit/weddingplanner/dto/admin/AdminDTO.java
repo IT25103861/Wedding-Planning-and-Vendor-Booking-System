@@ -2,34 +2,40 @@ package com.sliit.weddingplanner.dto.admin;
 
 import com.sliit.weddingplanner.dto.UserDTO;
 
+import java.time.LocalDateTime;
+
 public class AdminDTO extends UserDTO {
 
     private String role;
 
     public AdminDTO() {}
 
-    public AdminDTO(int id, String username, String name, String email,
-                    String password, String role, java.time.LocalDateTime createdAt) {
-        this.id = id;
-        this.username = username;
-        this.name = name;
-        this.email = email;
-        this.password = password;
+    public AdminDTO(String role) {
         this.role = role;
-        this.createdAt = createdAt;
     }
 
-    public String getRole() { return role; }
-    public void setRole(String role) { this.role = role; }
+    public AdminDTO(Integer id, String username, String name, String email, String password, LocalDateTime createdAt, String role) {
+        super(id, username, name, email, password, createdAt);
+        this.role = role;
+    }
+
+    public String getRole() {
+        return role;
+    }
+
+    public void setRole(String role) {
+        this.role = role;
+    }
 
     @Override
     public String toString() {
         return "AdminDTO{" +
-                "id=" + id +
+                "role='" + role + '\'' +
+                ", id=" + id +
                 ", username='" + username + '\'' +
                 ", name='" + name + '\'' +
                 ", email='" + email + '\'' +
-                ", role='" + role + '\'' +
+                ", password='" + password + '\'' +
                 ", createdAt=" + createdAt +
                 '}';
     }

@@ -19,30 +19,18 @@ public class AdminController {
     }
 
     @PostMapping("/create")
-    public ResponseEntity<AdminDTO> createAdmin(@RequestBody AdminDTO dto) {
-
-        AdminDTO admin = new AdminDTO();
-        admin.setId(dto.getId());
-        admin.setUsername(dto.getUsername());
-        admin.setName(dto.getName());
-        admin.setEmail(dto.getEmail());
-        admin.setPassword(dto.getPassword());
-        admin.setRole(dto.getRole());
-        admin.setCreatedAt(dto.getCreatedAt());
-
-        AdminDTO created = adminService.createAdmin(admin);
-        return new ResponseEntity<>(created, HttpStatus.CREATED);
+    public ResponseEntity<AdminDTO> createAdmin(@RequestBody AdminDTO adminDTO) {
+        return new ResponseEntity<>(adminService.createUser(adminDTO), HttpStatus.CREATED);
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<AdminDTO> getAdminById(@PathVariable int id) {
-        AdminDTO admin = adminService.getAdminById(id);
-        return ResponseEntity.ok(admin);
+        return ResponseEntity.ok(adminService.getUserById(id));
     }
 
     @GetMapping("/all")
     public ResponseEntity<List<AdminDTO>> getAllAdmins() {
-        return ResponseEntity.ok(adminService.getAllAdmins());
+        return ResponseEntity.ok(adminService.getAllUsers());
     }
 
     @PutMapping("/update/{id}")
@@ -50,12 +38,12 @@ public class AdminController {
             @PathVariable int id,
             @RequestBody AdminDTO adminDTO) {
 
-        return ResponseEntity.ok(adminService.updateAdmin(id, adminDTO));
+        return ResponseEntity.ok(adminService.updateUser(id, adminDTO));
     }
 
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<String> deleteAdmin(@PathVariable int id) {
-        adminService.deleteAdmin(id);
+        adminService.deleteUser(id);
         return ResponseEntity.ok("Admin deleted successfully. ID: " + id);
     }
 
