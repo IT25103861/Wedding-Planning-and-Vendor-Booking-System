@@ -38,7 +38,7 @@ public class VendorServiceImpl implements VendorService {
     }
 
     public VendorDTO updateVendor(int id, VendorDTO dto) {
-        dto.setVendorId(id);
+        dto.setId(id);
         return vendorRepository.update(dto);
     }
 

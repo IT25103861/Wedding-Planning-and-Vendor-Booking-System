@@ -1,14 +1,16 @@
 package com.sliit.weddingplanner.repository;
 
 import com.sliit.weddingplanner.db.DBConnection;
+import com.sliit.weddingplanner.dto.UserDTO;
 import com.sliit.weddingplanner.dto.vendor.VendorDTO;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigDecimal;
 import java.sql.*;
 import java.util.*;
 
 @Repository
-public class VendorRepository {
+public class VendorRepository  {
 
     private final Connection con;
 
@@ -24,15 +26,15 @@ public class VendorRepository {
 
         try (PreparedStatement ps = con.prepareStatement(sql)) {
 
-            ps.setInt(1,dto.getVendorId());
-            ps.setString(2,dto.getName());
-            ps.setString(3,dto.getUsername());
-            ps.setString(4,dto.getEmail());
-            ps.setString(5,dto.getPhone());
-            ps.setString(6,dto.getServiceType());
-            ps.setDouble(7,dto.getPrice());
-            ps.setString(8,dto.getAvailability());
-            ps.setString(9,dto.getStatus());
+            ps.setInt(1, dto.getId());
+            ps.setString(2, dto.getName());
+            ps.setString(3, dto.getUsername());
+            ps.setString(4, dto.getEmail());
+            ps.setString(5, dto.getPhone());
+            ps.setString(6, dto.getServiceType());
+            ps.setDouble(7, dto.getPrice());
+            ps.setString(8, dto.getAvailability());
+            ps.setString(9, dto.getStatus());
 
             ps.executeUpdate();
             return dto;
@@ -55,7 +57,7 @@ public class VendorRepository {
 
                 VendorDTO v = new VendorDTO();
 
-                v.setVendorId(rs.getInt("vendor_id"));
+                v.setId(rs.getInt("vendor_id"));
                 v.setName(rs.getString("name"));
                 v.setUsername(rs.getString("username"));
                 v.setEmail(rs.getString("email"));
@@ -88,7 +90,7 @@ public class VendorRepository {
 
                 VendorDTO v = new VendorDTO();
 
-                v.setVendorId(rs.getInt("vendor_id"));
+                v.setId(rs.getInt("vendor_id"));
                 v.setName(rs.getString("name"));
                 v.setUsername(rs.getString("username"));
                 v.setEmail(rs.getString("email"));
@@ -103,24 +105,27 @@ public class VendorRepository {
         return list;
     }
 
-    public VendorDTO update(VendorDTO dto) {
+    public VendorDTO update(VendorDTO vendorDTO) {
 
-        String sql = "UPDATE vendor SET name=?,username=?,email=? WHERE vendor_id=?";
-
-        try (PreparedStatement ps = con.prepareStatement(sql)) {
-
-            ps.setString(1,dto.getName());
-            ps.setString(2,dto.getUsername());
-            ps.setString(3,dto.getEmail());
-            ps.setInt(4,dto.getVendorId());
-
+        String sql = "UPDATE vendor SET name=?, username=?, email=?, phone=?, service_type=?, price=?, availability=?, status=?, password=? WHERE vendor_id=?";
+        try (PreparedStatement ps = con.prepareStatement(sql)){
+            ps.setString(1, vendorDTO.getName());
+            ps.setString(2, vendorDTO.getUsername());
+            ps.setString(3, vendorDTO.getEmail());
+            ps.setString(4, vendorDTO.getPhone());
+            ps.setString(5, vendorDTO.getServiceType());
+            ps.setBigDecimal(6, BigDecimal.valueOf(vendorDTO.getPrice()));
+            ps.setString(7, vendorDTO.getAvailability());
+            ps.setString(8, vendorDTO.getStatus());
+            ps.setString(9, vendorDTO.getPassword());
+            ps.setInt(10, vendorDTO.getId());
             ps.executeUpdate();
-            return dto;
-
-        } catch(Exception e){
-            throw new RuntimeException(e);
+            return vendorDTO;
+        } catch (SQLException e) {
+            throw new RuntimeException("Error updating vendor", e);
         }
     }
+
 
     public void delete(int id) {
 
