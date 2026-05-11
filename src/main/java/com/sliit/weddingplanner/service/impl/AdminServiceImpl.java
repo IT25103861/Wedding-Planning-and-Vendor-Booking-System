@@ -30,8 +30,7 @@ public class AdminServiceImpl implements AdminService {
 
     @Override
     public AdminDTO getUserById(int id) {
-        return adminRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Admin not found with id " + id));
+        return adminRepository.findById(id);
     }
 
     @Override
