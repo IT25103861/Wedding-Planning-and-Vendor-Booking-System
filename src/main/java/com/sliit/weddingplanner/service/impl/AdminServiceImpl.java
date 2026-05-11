@@ -19,14 +19,6 @@ public class AdminServiceImpl implements AdminService {
     @Override
     public AdminDTO createAdmin(AdminDTO adminDTO) {
 
-        if (adminDTO.getId() <= 0) {
-            throw new RuntimeException("ID must be provided manually");
-        }
-
-        if (adminDTO.getPassword().length() < 8) {
-            throw new RuntimeException("Password must be at least 8 characters");
-        }
-
         boolean exists = adminRepository.existsByUsernameOrEmail(
                 adminDTO.getUsername(),
                 adminDTO.getEmail()
