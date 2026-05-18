@@ -1,46 +1,57 @@
 package com.sliit.weddingplanner.controller;
 
-import com.sliit.weddingplanner.dto.payment.PaymentDTO;
+import com.sliit.weddingplanner.dto.PaymentDTO;
 import com.sliit.weddingplanner.service.PaymentService;
-import com.sliit.weddingplanner.service.impl.PaymentServiceImpl;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
+// OOP: Encapsulation
+// OOP: Dependency Injection
+// Relationship: PaymentController depends on PaymentService
 @RestController
 @RequestMapping("/api/payments")
 public class PaymentController {
 
-    private final PaymentService service = new PaymentServiceImpl();
+    private final PaymentService paymentService;
+
+    @Autowired
+    public PaymentController(PaymentService paymentService) {
+        this.paymentService = paymentService;
+    }
 
     @PostMapping
-    public String save(@RequestBody PaymentDTO dto) {
-        return service.savePayment(dto)
-                ? "Saved successfully"
-                : "Failed to save";
+    public ResponseEntity<PaymentDTO> createPayment(@RequestBody PaymentDTO paymentDTO) {
+        return new ResponseEntity<>(paymentService.create(paymentDTO), HttpStatus.CREATED);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<PaymentDTO> getPaymentById(@PathVariable int id) {
+        return ResponseEntity.ok(paymentService.getById(id));
+    }
+
+    @GetMapping("/booking/{bookingId}")
+    public ResponseEntity<PaymentDTO> getPaymentByBookingId(@PathVariable int bookingId) {
+        return ResponseEntity.ok(paymentService.getPaymentByBookingId(bookingId));
     }
 
     @GetMapping
-    public List<PaymentDTO> getAll() {
-        return service.getAllPayments();
+    public ResponseEntity<java.util.List<PaymentDTO>> getAllPayments() {
+        return ResponseEntity.ok(paymentService.getAll());
     }
 
-    @GetMapping("/{paymentId}")
-    public PaymentDTO getById(@PathVariable int paymentId) {
-        return service.searchPayment(paymentId);
+    @GetMapping("/customer/{customerId}")
+    public ResponseEntity<java.util.List<PaymentDTO>> getPaymentsByCustomer(@PathVariable int customerId) {
+        return ResponseEntity.ok(paymentService.getPaymentsByCustomerId(customerId));
     }
 
-    @PutMapping
-    public String update(@RequestBody PaymentDTO dto) {
-        return service.updatePayment(dto)
-                ? "Updated successfully"
-                : "Failed to update";
-    }
-
-    @DeleteMapping("/{paymentId}")
-    public String delete(@PathVariable int paymentId) {
-        return service.deletePayment(paymentId)
-                ? "Deleted successfully"
-                : "Failed to delete";
+    @PutMapping("/{id}/status")
+    public ResponseEntity<Void> updatePaymentStatus(
+            @PathVariable int id, 
+            @RequestParam String status,
+            @RequestParam(required = false) String paymentType) {
+        paymentService.updatePaymentStatus(id, status, paymentType);
+        return ResponseEntity.ok().build();
     }
 }
