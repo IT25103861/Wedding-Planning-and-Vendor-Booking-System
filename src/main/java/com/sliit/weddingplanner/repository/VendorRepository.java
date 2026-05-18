@@ -3,122 +3,170 @@ package com.sliit.weddingplanner.repository;
 import com.sliit.weddingplanner.db.DBConnection;
 import com.sliit.weddingplanner.dto.UserDTO;
 import com.sliit.weddingplanner.dto.vendor.VendorDTO;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
 import java.sql.*;
 import java.util.*;
 
+// OOP: Encapsulation
+// OOP: Dependency Injection
+// Relationship: VendorRepository depends on DBConnection
 @Repository
-public class VendorRepository  {
+public class VendorRepository {
 
-    private final Connection con;
+    private final DBConnection dbConnection;
 
-    public VendorRepository() {
-        con = DBConnection.getInstance().getConnection();
+    @Autowired
+    public VendorRepository(DBConnection dbConnection) {
+        this.dbConnection = dbConnection;
     }
 
-    public VendorDTO save(VendorDTO dto) {
+    public VendorDTO save(VendorDTO vendorDTO) {
+        String sql = "INSERT INTO vendor (name, username, email, phone, availability, status, password) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        try (Connection conn = dbConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS)) {
 
-        String sql = "INSERT INTO vendor " +
-                "(vendor_id,name,username,email,phone,service_type,price,availability,status) " +
-                "VALUES (?,?,?,?,?,?,?,?,?)";
-
-        try (PreparedStatement ps = con.prepareStatement(sql)) {
-
-            ps.setInt(1, dto.getId());
-            ps.setString(2, dto.getName());
-            ps.setString(3, dto.getUsername());
-            ps.setString(4, dto.getEmail());
-            ps.setString(5, dto.getPhone());
-            ps.setString(6, dto.getServiceType());
-            ps.setDouble(7, dto.getPrice());
-            ps.setString(8, dto.getAvailability());
-            ps.setString(9, dto.getStatus());
-
-            ps.executeUpdate();
-            return dto;
-
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public Optional<VendorDTO> findById(int id) {
-
-        String sql = "SELECT * FROM vendor WHERE vendor_id=?";
-
-        try (PreparedStatement ps = con.prepareStatement(sql)) {
-
-            ps.setInt(1,id);
-            ResultSet rs = ps.executeQuery();
-
-            if(rs.next()){
-
-                VendorDTO v = new VendorDTO();
-
-                v.setId(rs.getInt("vendor_id"));
-                v.setName(rs.getString("name"));
-                v.setUsername(rs.getString("username"));
-                v.setEmail(rs.getString("email"));
-                v.setPhone(rs.getString("phone"));
-                v.setServiceType(rs.getString("service_type"));
-                v.setPrice(rs.getDouble("price"));
-                v.setAvailability(rs.getString("availability"));
-                v.setStatus(rs.getString("status"));
-
-                return Optional.of(v);
-            }
-
-        } catch(Exception e){
-            throw new RuntimeException(e);
-        }
-
-        return Optional.empty();
-    }
-
-    public List<VendorDTO> findAll() {
-
-        List<VendorDTO> list = new ArrayList<>();
-
-        try (PreparedStatement ps =
-                     con.prepareStatement("SELECT * FROM vendor")) {
-
-            ResultSet rs = ps.executeQuery();
-
-            while(rs.next()){
-
-                VendorDTO v = new VendorDTO();
-
-                v.setId(rs.getInt("vendor_id"));
-                v.setName(rs.getString("name"));
-                v.setUsername(rs.getString("username"));
-                v.setEmail(rs.getString("email"));
-
-                list.add(v);
-            }
-
-        } catch(Exception e){
-            throw new RuntimeException(e);
-        }
-
-        return list;
-    }
-
-    public VendorDTO update(VendorDTO vendorDTO) {
-
-        String sql = "UPDATE vendor SET name=?, username=?, email=?, phone=?, service_type=?, price=?, availability=?, status=?, password=? WHERE vendor_id=?";
-        try (PreparedStatement ps = con.prepareStatement(sql)){
             ps.setString(1, vendorDTO.getName());
             ps.setString(2, vendorDTO.getUsername());
             ps.setString(3, vendorDTO.getEmail());
             ps.setString(4, vendorDTO.getPhone());
-            ps.setString(5, vendorDTO.getServiceType());
-            ps.setBigDecimal(6, BigDecimal.valueOf(vendorDTO.getPrice()));
-            ps.setString(7, vendorDTO.getAvailability());
-            ps.setString(8, vendorDTO.getStatus());
-            ps.setString(9, vendorDTO.getPassword());
-            ps.setInt(10, vendorDTO.getId());
+            ps.setString(5, vendorDTO.getAvailability() != null ? vendorDTO.getAvailability() : "PENDING");
+            ps.setString(6, vendorDTO.getStatus() != null ? vendorDTO.getStatus() : "PENDING");
+            ps.setString(7, vendorDTO.getPassword());
+
+            ps.executeUpdate();
+
+            try (ResultSet rs = ps.getGeneratedKeys()) {
+                if (rs.next()) {
+                    vendorDTO.setId(rs.getInt(1));
+                }
+            }
+            return vendorDTO;
+        } catch (SQLException e) {
+            throw new RuntimeException("Error saving vendor", e);
+        }
+    }
+
+    public Optional<VendorDTO> findById(int id) {
+        String sql = "SELECT * FROM vendor WHERE vendor_id = ?";
+        try (Connection conn = dbConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, id);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return Optional.of(mapRowToVendor(rs));
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Error finding vendor by ID", e);
+        }
+        return Optional.empty();
+    }
+
+    public List<VendorDTO> findAll() {
+        List<VendorDTO> list = new ArrayList<>();
+        String sql = "SELECT * FROM vendor";
+        try (Connection conn = dbConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                list.add(mapRowToVendor(rs));
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Error finding all vendors", e);
+        }
+        return list;
+    }
+
+    public void updateStatus(int vendorId, String status, int adminId) {
+        String sql = "UPDATE vendor SET status = ?, approved_by = ?, approved_at = CURRENT_TIMESTAMP WHERE vendor_id = ?";
+        try (Connection conn = dbConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, status);
+            ps.setInt(2, adminId);
+            ps.setInt(3, vendorId);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException("Error updating vendor status", e);
+        }
+    }
+
+    public void updateAvailability(int vendorId, String availability) {
+        String sql = "UPDATE vendor SET availability = ? WHERE vendor_id = ?";
+        try (Connection conn = dbConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, availability);
+            ps.setInt(2, vendorId);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException("Error updating vendor availability", e);
+        }
+    }
+
+    public boolean existsByEmail(String email) {
+        String sql = "SELECT 1 FROM vendor WHERE email=?";
+        try (Connection conn = dbConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, email);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next();
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Error checking vendor existence", e);
+        }
+    }
+
+    public boolean existsByUsername(String username) {
+        String sql = "SELECT 1 FROM vendor WHERE username=?";
+        try (Connection conn = dbConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, username);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next();
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Error checking vendor username existence", e);
+        }
+    }
+
+    public boolean existsByPhone(String phone) {
+        String sql = "SELECT 1 FROM vendor WHERE phone=?";
+        try (Connection conn = dbConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, phone);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next();
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Error checking vendor phone existence", e);
+        }
+    }
+
+    public void delete(int id) {
+        String sql = "DELETE FROM vendor WHERE vendor_id = ?";
+        try (Connection conn = dbConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, id);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException("Error deleting vendor", e);
+        }
+    }
+
+    public VendorDTO update(VendorDTO vendorDTO) {
+        String sql = "UPDATE vendor SET name=?, username=?, email=?, phone=?, availability=?, status=?, password=? WHERE vendor_id=?";
+        try (Connection conn = dbConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, vendorDTO.getName());
+            ps.setString(2, vendorDTO.getUsername());
+            ps.setString(3, vendorDTO.getEmail());
+            ps.setString(4, vendorDTO.getPhone());
+            ps.setString(5, vendorDTO.getAvailability());
+            ps.setString(6, vendorDTO.getStatus());
+            ps.setString(7, vendorDTO.getPassword());
+            ps.setInt(8, vendorDTO.getId());
             ps.executeUpdate();
             return vendorDTO;
         } catch (SQLException e) {
@@ -126,33 +174,18 @@ public class VendorRepository  {
         }
     }
 
-
-    public void delete(int id) {
-
-        try (PreparedStatement ps =
-                     con.prepareStatement("DELETE FROM vendor WHERE vendor_id=?")) {
-
-            ps.setInt(1,id);
-            ps.executeUpdate();
-
-        } catch(Exception e){
-            throw new RuntimeException(e);
-        }
-    }
-
-    public boolean existsByUsernameOrEmail(String username,String email){
-
-        String sql = "SELECT 1 FROM vendor WHERE username=? OR email=?";
-
-        try(PreparedStatement ps = con.prepareStatement(sql)){
-
-            ps.setString(1,username);
-            ps.setString(2,email);
-
-            return ps.executeQuery().next();
-
-        } catch(Exception e){
-            throw new RuntimeException(e);
-        }
+    private VendorDTO mapRowToVendor(ResultSet rs) throws SQLException {
+        VendorDTO dto = new VendorDTO();
+        dto.setId(rs.getInt("vendor_id"));
+        dto.setName(rs.getString("name"));
+        dto.setUsername(rs.getString("username"));
+        dto.setEmail(rs.getString("email"));
+        dto.setPhone(rs.getString("phone"));
+        dto.setAvailability(rs.getString("availability"));
+        dto.setStatus(rs.getString("status"));
+        dto.setApprovedBy(rs.getObject("approved_by") != null ? rs.getInt("approved_by") : null);
+        dto.setApprovedAt(rs.getTimestamp("approved_at") != null ? Timestamp.valueOf(rs.getTimestamp("approved_at").toLocalDateTime()) : null);
+        dto.setCreatedAt(rs.getTimestamp("created_at") != null ? rs.getTimestamp("created_at").toLocalDateTime() : null);
+        return dto;
     }
 }
