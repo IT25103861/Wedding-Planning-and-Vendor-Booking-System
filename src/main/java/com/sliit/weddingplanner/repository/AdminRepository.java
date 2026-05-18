@@ -2,6 +2,7 @@ package com.sliit.weddingplanner.repository;
 
 import com.sliit.weddingplanner.db.DBConnection;
 import com.sliit.weddingplanner.dto.admin.AdminDTO;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import java.sql.Connection;
@@ -16,22 +17,23 @@ import java.sql.Statement;
 @Repository
 public class AdminRepository {
 
-    private final Connection connection;
+    private final DBConnection dbConnection;
 
-    public AdminRepository() {
-        this.connection = DBConnection.getInstance().getConnection();
+    @Autowired
+    public AdminRepository(DBConnection dbConnection) {
+        this.dbConnection = dbConnection;
     }
 
     public AdminDTO save(AdminDTO adminDTO) {
         String sql = "INSERT INTO admin (name, username, email, password, role) VALUES (?, ?, ?, ?, ?)";
-        try (PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+        try (Connection connection = dbConnection.getConnection();
+             PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
             ps.setString(1, adminDTO.getName());
             ps.setString(2, adminDTO.getUsername());
             ps.setString(3, adminDTO.getEmail());
             ps.setString(4, adminDTO.getPassword());
             ps.setString(5, adminDTO.getRole());
-
             ps.executeUpdate();
 
             try (ResultSet rs = ps.getGeneratedKeys()) {
@@ -47,7 +49,8 @@ public class AdminRepository {
 
     public void delete(int id) {
         String sql = "DELETE FROM admin WHERE admin_id = ?";
-        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+        try (Connection connection = dbConnection.getConnection();
+             PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setInt(1, id);
             ps.executeUpdate();
         } catch (SQLException e) {
@@ -57,7 +60,8 @@ public class AdminRepository {
 
     public AdminDTO findById(int id) {
         String sql = "SELECT * FROM admin WHERE admin_id = ?";
-        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+        try (Connection connection = dbConnection.getConnection();
+             PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setInt(1, id);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
@@ -73,9 +77,9 @@ public class AdminRepository {
     public List<AdminDTO> findAll() {
         List<AdminDTO> list = new ArrayList<>();
         String sql = "SELECT * FROM admin";
-        try (PreparedStatement ps = connection.prepareStatement(sql);
+        try (Connection connection = dbConnection.getConnection();
+             PreparedStatement ps = connection.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
-
             while (rs.next()) {
                 list.add(mapRowToAdmin(rs));
             }
@@ -87,15 +91,13 @@ public class AdminRepository {
 
     public AdminDTO update(AdminDTO adminDTO) {
         String sql = "UPDATE admin SET name=?, username=?, email=?, role=? WHERE admin_id=?";
-        try (PreparedStatement ps = connection.prepareStatement(sql)){
-
-
+        try (Connection connection = dbConnection.getConnection();
+             PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setString(1, adminDTO.getName());
             ps.setString(2, adminDTO.getUsername());
             ps.setString(3, adminDTO.getEmail());
             ps.setString(4, adminDTO.getRole());
             ps.setInt(5, adminDTO.getId());
-
             ps.executeUpdate();
             return adminDTO;
         } catch (SQLException e) {
@@ -105,11 +107,10 @@ public class AdminRepository {
 
     public boolean existsByUsernameOrEmail(String username, String email) {
         String sql = "SELECT 1 FROM admin WHERE username=? OR email=?";
-        try (PreparedStatement ps = connection.prepareStatement(sql)) {
-
+        try (Connection connection = dbConnection.getConnection();
+             PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setString(1, username);
             ps.setString(2, email);
-
             try (ResultSet rs = ps.executeQuery()) {
                 return rs.next();
             }
