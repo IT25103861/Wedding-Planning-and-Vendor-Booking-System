@@ -1,15 +1,15 @@
 package com.sliit.weddingplanner.controller.login;
 
-import com.sliit.weddingplanner.dto.login.LoginRequestDTO;
-import com.sliit.weddingplanner.dto.login.LoginResponseDTO;
+import com.sliit.weddingplanner.dto.LoginRequestDTO;
+import com.sliit.weddingplanner.dto.LoginResponseDTO;
 import com.sliit.weddingplanner.service.AuthService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+// OOP: Encapsulation
+// OOP: Dependency Injection
+// Relationship: AuthController depends on AuthService
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {

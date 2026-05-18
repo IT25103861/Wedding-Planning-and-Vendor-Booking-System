@@ -1,7 +1,9 @@
-package com.sliit.weddingplanner.dto.login;
+package com.sliit.weddingplanner.dto;
 
+
+// OOP: Encapsulation
 public class LoginRequestDTO {
-    private String username;
+    private String username; // can be username or email depending on implementation
     private String password;
     public LoginRequestDTO() {}
 

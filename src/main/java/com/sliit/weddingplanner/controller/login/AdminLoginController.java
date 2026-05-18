@@ -1,7 +1,7 @@
 package com.sliit.weddingplanner.controller.login;
 
-import com.sliit.weddingplanner.dto.login.LoginRequestDTO;
-import com.sliit.weddingplanner.dto.login.LoginResponseDTO;
+import com.sliit.weddingplanner.dto.LoginRequestDTO;
+import com.sliit.weddingplanner.dto.LoginResponseDTO;
 import com.sliit.weddingplanner.service.AuthService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;

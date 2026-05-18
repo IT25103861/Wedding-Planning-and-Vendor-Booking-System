@@ -1,6 +1,6 @@
-package com.sliit.weddingplanner.controller;
+package com.sliit.weddingplanner.controller.admin;
 
-import com.sliit.weddingplanner.dto.admin.AdminDTO;
+import com.sliit.weddingplanner.dto.AdminDTO;
 import com.sliit.weddingplanner.service.AdminService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -9,8 +9,11 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+// OOP: Encapsulation
+// OOP: Dependency Injection
+// Relationship: AdminController depends on AdminService
 @RestController
-@RequestMapping("/api/admin")
+@RequestMapping("/api/admins")
 public class AdminController {
 
     private final AdminService adminService;

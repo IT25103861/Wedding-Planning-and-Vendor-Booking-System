@@ -1,7 +1,7 @@
-package com.sliit.weddingplanner.dto.login;
+package com.sliit.weddingplanner.dto;
 
-import com.sliit.weddingplanner.dto.UserDTO;
 
+// OOP: Encapsulation
 public class LoginResponseDTO {
     private String token;
     private String role;

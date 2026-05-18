@@ -1,7 +1,10 @@
-package com.sliit.weddingplanner.dto.admin;
+package com.sliit.weddingplanner.dto;
 
-import com.sliit.weddingplanner.dto.UserDTO;
 
+// OOP: Inheritance
+// OOP: Encapsulation
+// OOP: Polymorphism
+// Relationship: Admin inherits User
 public class AdminDTO extends UserDTO {
 
     private String role;

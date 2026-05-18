@@ -1,4 +1,4 @@
-package com.sliit.weddingplanner.exeption;
+package com.sliit.weddingplanner.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -9,7 +9,8 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
-
+// OOP: Encapsulation
+// OOP: Polymorphism (Exception Handling)
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -48,4 +49,3 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(body, status);
     }
 }
-
