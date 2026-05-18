@@ -1,32 +1,22 @@
 package com.sliit.weddingplanner.db;
 
+import javax.sql.DataSource;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
+@Component
 public class DBConnection {
-    private static DBConnection dBConnection;
-    private Connection connection;
+    private final DataSource dataSource;
 
-    private DBConnection(){
-        try {
-            Class.forName("com.mysql.cj.jdbc.Driver");
-            connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/wedding_system", "root", "L123adeesh");
-        } catch (ClassNotFoundException | SQLException ex) {
-            Logger.getLogger(DBConnection.class.getName()).log(Level.SEVERE, null, ex);
-        }
+    @Autowired
+    public DBConnection(DataSource dataSource) {
+        this.dataSource = dataSource;
     }
 
-    public static DBConnection getInstance(){
-        if(dBConnection == null){
-            dBConnection = new DBConnection();
-        }
-        return dBConnection;
-    }
-
-    public Connection getConnection(){
-        return connection;
+    public Connection getConnection() throws SQLException {
+        return dataSource.getConnection();
     }
 }

@@ -1,58 +1,51 @@
 package com.sliit.weddingplanner.controller;
 
-import com.sliit.weddingplanner.model.Review;
+import com.sliit.weddingplanner.dto.ReviewDTO;
 import com.sliit.weddingplanner.service.ReviewService;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-@Controller
+import java.util.List;
+
+// OOP: Encapsulation
+// OOP: Dependency Injection
+// Relationship: ReviewController depends on ReviewService
+@RestController
+@RequestMapping("/api/reviews")
 public class ReviewController {
 
-    private final ReviewService service;
+    private final ReviewService reviewService;
 
-    // ✅ Constructor Injection (BEST PRACTICE)
-    public ReviewController(ReviewService service) {
-        this.service = service;
+    @Autowired
+    public ReviewController(ReviewService reviewService) {
+        this.reviewService = reviewService;
     }
 
-    // READ ALL
-    @GetMapping("/reviews")
-    public String showReviews(Model model) {
-        model.addAttribute("reviews", service.getAllReviews());
-        return "reviews";
+    @PostMapping
+    public ResponseEntity<ReviewDTO> createReview(@RequestBody ReviewDTO reviewDTO) {
+        return new ResponseEntity<>(reviewService.create(reviewDTO), HttpStatus.CREATED);
     }
 
-    // CREATE
-    @PostMapping("/addReview")
-    public String addReview(@RequestParam String vendor,
-                            @RequestParam int rating,
-                            @RequestParam String comment) {
-
-        Review review = new Review(vendor, rating, comment);
-        service.addReview(review);
-
-        return "redirect:/reviews";
+    @GetMapping("/{id}")
+    public ResponseEntity<ReviewDTO> getReviewById(@PathVariable int id) {
+        return ResponseEntity.ok(reviewService.getById(id));
     }
 
-    // DELETE
-    @GetMapping("/deleteReview/{id}")
-    public String deleteReview(@PathVariable int id) {
-        service.deleteReview(id);
-        return "redirect:/reviews";
+    @GetMapping
+    public ResponseEntity<List<ReviewDTO>> getAllReviews() {
+        return ResponseEntity.ok(reviewService.getAll());
     }
 
-    // SHOW UPDATE FORM (optional but recommended)
-    @GetMapping("/editReview/{id}")
-    public String editReview(@PathVariable int id, Model model) {
-        model.addAttribute("review", service.getReviewById(id));
-        return "edit-review";
+    @GetMapping("/package/{packageId}")
+    public ResponseEntity<List<ReviewDTO>> getReviewsByPackage(@PathVariable int packageId) {
+        return ResponseEntity.ok(reviewService.getReviewsByPackage(packageId));
     }
 
-    // UPDATE
-    @PostMapping("/updateReview")
-    public String updateReview(@ModelAttribute Review review) {
-        service.updateReview(review);
-        return "redirect:/reviews";
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteReview(@PathVariable int id) {
+        reviewService.delete(id);
+        return ResponseEntity.noContent().build();
     }
 }
