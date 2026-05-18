@@ -184,7 +184,7 @@ public class VendorRepository {
         dto.setAvailability(rs.getString("availability"));
         dto.setStatus(rs.getString("status"));
         dto.setApprovedBy(rs.getObject("approved_by") != null ? rs.getInt("approved_by") : null);
-        dto.setApprovedAt(rs.getTimestamp("approved_at") != null ? Timestamp.valueOf(rs.getTimestamp("approved_at").toLocalDateTime()) : null);
+        dto.setApprovedAt(rs.getTimestamp("approved_at") != null ? Timestamp.valueOf(rs.getTimestamp("approved_at").toLocalDateTime()).toLocalDateTime() : null);
         dto.setCreatedAt(rs.getTimestamp("created_at") != null ? rs.getTimestamp("created_at").toLocalDateTime() : null);
         return dto;
     }
