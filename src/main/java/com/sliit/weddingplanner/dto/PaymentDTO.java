@@ -5,9 +5,6 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 // OOP: Encapsulation
-// OOP: Association
-// OOP: Abstraction
-// Relationship: Payment belongs to Booking
 public class PaymentDTO {
 
     private Integer paymentId;
