@@ -118,6 +118,25 @@ public class ReviewRepository {
         }
     }
 
+    public ReviewDTO update(ReviewDTO reviewDTO) {
+        String sql = "UPDATE review SET event_id = ?, customer_id = ?, package_id = ?, package_rating = ?, package_comment = ? WHERE review_id = ?";
+        try (Connection conn = dbConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, reviewDTO.getEventId());
+            if (reviewDTO.getCustomerId() != null) ps.setInt(2, reviewDTO.getCustomerId()); else ps.setNull(2, Types.INTEGER);
+            if (reviewDTO.getPackageId() != null) ps.setInt(3, reviewDTO.getPackageId()); else ps.setNull(3, Types.INTEGER);
+            if (reviewDTO.getPackageRating() != null) ps.setInt(4, reviewDTO.getPackageRating()); else ps.setNull(4, Types.INTEGER);
+            ps.setString(5, reviewDTO.getPackageComment());
+            ps.setInt(6, reviewDTO.getReviewId());
+
+            ps.executeUpdate();
+            return reviewDTO;
+        } catch (SQLException e) {
+            throw new RuntimeException("Error updating review", e);
+        }
+    }
+
     private ReviewDTO mapRowToReview(ResultSet rs) throws SQLException {
         ReviewDTO dto = new ReviewDTO();
         dto.setReviewId(rs.getInt("review_id"));

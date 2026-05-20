@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Register | Ethereal Weddings</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body class="fade-in" style="background-color: var(--bg-light); display: flex; align-items: center; justify-content: center; padding: 2rem;">
+
+    <div class="card" style="width: 100%; max-width: 600px; display: flex; padding: 0; overflow: hidden; box-shadow: var(--shadow);">
+        <div style="flex: 1; background: linear-gradient(135deg, var(--secondary), var(--accent)); color: #fff; padding: 3rem; display: flex; flex-direction: column; justify-content: center;" class="hide-mobile">
+            <h1 class="brand-font" style="color: var(--primary);">Secure Portal</h1>
+            <p style="opacity: 0.8; margin-top: 1rem;">Administrate the Ethereal luxury wedding planning network.</p>
+        </div>
+        
+        <div style="flex: 1.5; padding: 3rem;">
+            <!-- Key Verification Step -->
+            <div id="keyStep">
+                <div class="mb-2">
+                    <h2 class="brand-font">Admin Verification</h2>
+                    <p class="text-muted">Enter your Ethereal product key to unlock registration.</p>
+                </div>
+
+                <form id="keyForm">
+                    <div class="form-group">
+                        <label class="form-label">Product Key (XXXX-XXXX)</label>
+                        <input type="text" id="productKey" class="form-control" placeholder="e.g. ABCD-1234" required style="letter-spacing: 2px; font-weight: 700; text-transform: uppercase; text-align: center; font-size: 1.2rem; padding: 0.8rem;">
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100" style="width: 100%; margin-top: 1rem;">Verify & Proceed</button>
+                </form>
+
+                <div class="mt-2 text-center">
+                    <p class="text-muted">Already have an account? <a href="../login.html" class="text-primary">Sign in here</a></p>
+                </div>
+            </div>
+
+            <!-- Registration Form Step (Hidden by default) -->
+            <div id="registerStep" style="display: none;">
+                <div class="mb-2">
+                    <h2 class="brand-font">Create Admin Account</h2>
+                    <p class="text-muted">Fill in your personal credentials below.</p>
+                </div>
+
+                <form id="registerForm">
+                    <div class="form-group">
+                        <label class="form-label">Verified Product Key</label>
+                        <input type="text" id="verifiedKeyDisplay" class="form-control" readonly style="letter-spacing: 2px; font-weight: 700; text-transform: uppercase; background: #e8f5e9; border-color: #a5d6a7; color: #2e7d32; text-align: center; font-size: 1.1rem; padding: 0.6rem;">
+                        <div id="decodedKeyInfo" style="font-size: 0.85rem; color: #2e7d32; text-align: center; margin-top: 0.4rem; font-weight: 600;"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Full Name</label>
+                        <input type="text" id="name" class="form-control" placeholder="John Doe" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Username</label>
+                        <input type="text" id="username" class="form-control" placeholder="admin_johndoe" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Email</label>
+                        <input type="email" id="email" class="form-control" placeholder="admin@ethereal.com" required>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div class="form-group">
+                            <label class="form-label">Password</label>
+                            <input type="password" id="password" class="form-control" placeholder="••••••••" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Confirm Password</label>
+                            <input type="password" id="confirmPassword" class="form-control" placeholder="••••••••" required>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100" style="width: 100%; margin-top: 1rem;" id="submitBtn">Create Account</button>
+                </form>
+
+                <div class="mt-2 text-center">
+                    <p class="text-muted"><a href="#" id="backToKey" class="text-primary" style="text-decoration: none;"><i class="fas fa-arrow-left"></i> Change Product Key</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../js/api.js"></script>
+    <script src="../js/components.js"></script>
+    <script src="../js/main.js"></script>
+    <script>
+        const TIERS  = ["A", "B", "C", "D"];      // 4
+        const LEVELS = ["1", "2", "3", "4", "5"]; // 5
+
+        // Validate key using new pattern
+        function validateProductKey(input) {
+            if (!input) return false;
+            return /^PROD-[ABCD][12345]XZ$/.test(input.trim().toUpperCase());
+        }
+
+        // Decode key tier and level maps
+        function decodeProductKey(key) {
+            const tierMap  = { A: "Basic", B: "Pro", C: "Team", D: "Enterprise" };
+            const levelMap = { 1: "1 Month", 2: "3 Months", 3: "6 Months", 4: "1 Year", 5: "Lifetime" };
+            const [, variable] = key.trim().toUpperCase().split("-");
+            const tier  = variable[0];
+            const level = variable[1];
+            return { tier: tierMap[tier], duration: levelMap[level] };
+        }
+
+        // Split view handling
+        const keyForm = document.getElementById('keyForm');
+        const keyStep = document.getElementById('keyStep');
+        const registerStep = document.getElementById('registerStep');
+        const verifiedKeyDisplay = document.getElementById('verifiedKeyDisplay');
+        const productKeyInput = document.getElementById('productKey');
+
+        let verifiedKey = "";
+
+        keyForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const enteredKey = productKeyInput.value.trim();
+
+            if (!validateProductKey(enteredKey)) {
+                showToast('Invalid Product Key! Must be a valid PROD-XXXXZ code.', 'error');
+                return;
+            }
+
+            // Key is verified successfully
+            verifiedKey = enteredKey.toUpperCase();
+            verifiedKeyDisplay.value = verifiedKey;
+
+            // Decode key details
+            const decoded = decodeProductKey(verifiedKey);
+            document.getElementById('decodedKeyInfo').innerHTML = 
+                `<i class="fas fa-check-circle"></i> Ethereal Product Key Verified`;
+
+            showToast('Product Key Verified Successfully!', 'success');
+
+            // Switch Steps
+            keyStep.style.display = 'none';
+            registerStep.style.display = 'block';
+        });
+
+        document.getElementById('backToKey').addEventListener('click', (e) => {
+            e.preventDefault();
+            registerStep.style.display = 'none';
+            keyStep.style.display = 'block';
+        });
+
+        const registerForm = document.getElementById('registerForm');
+        
+        registerForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const name = document.getElementById('name').value.trim();
+            const username = document.getElementById('username').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+
+            // Re-verify key in case they altered DOM
+            if (!validateProductKey(verifiedKey)) {
+                showToast('Verification failed. Please re-enter product key.', 'error');
+                registerStep.style.display = 'none';
+                keyStep.style.display = 'block';
+                return;
+            }
+            
+            // 1. Full Name: must only contain Letters and spaces, no numbers, cannot be null
+            if (!name) {
+                showToast('Full Name is required', 'error');
+                return;
+            }
+            if (!/^[a-zA-Z\s]+$/.test(name)) {
+                showToast('Full Name must only contain letters and spaces', 'error');
+                return;
+            }
+
+            // 2. Username: must be without spaces, cant contain special characters (just _ and numbers and letters)
+            if (!username) {
+                showToast('Username is required', 'error');
+                return;
+            }
+            if (!/^[a-zA-Z0-9_]+$/.test(username)) {
+                showToast('Username must contain only letters, numbers, and underscores without spaces', 'error');
+                return;
+            }
+
+            // 3. Email: must have @ and domain
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                showToast('Please enter a valid email with a domain (e.g. admin@ethereal.com)', 'error');
+                return;
+            }
+
+            // 4. Password: at least contain 6 characters
+            if (password.length < 6) {
+                showToast('Password must be at least 6 characters long', 'error');
+                return;
+            }
+            
+            if (password !== confirmPassword) {
+                showToast('Passwords do not match', 'error');
+                return;
+            }
+
+            const submitBtn = document.getElementById('submitBtn');
+            utils.setLoading(submitBtn, true, 'Registering...');
+
+            const payload = {
+                name: name,
+                username: username,
+                email: email,
+                password: password,
+                role: 'ADMIN'
+            };
+
+            try {
+                await api.post('/admins', payload, false);
+                showToast('Admin account created successfully!', 'success');
+                setTimeout(() => {
+                    window.location.href = '../login.html';
+                }, 1500);
+            } catch (error) {
+                showToast(error.message || 'Admin registration failed', 'error');
+            } finally {
+                utils.setLoading(submitBtn, false, 'Create Account');
+            }
+        });
+    </script>
+    <style>
+        @media (max-width: 768px) {
+            .hide-mobile { display: none !important; }
+        }
+    </style>
+</body>
+</html>

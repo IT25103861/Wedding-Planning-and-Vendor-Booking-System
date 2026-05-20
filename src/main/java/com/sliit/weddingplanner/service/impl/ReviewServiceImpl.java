@@ -41,7 +41,12 @@ public class ReviewServiceImpl implements ReviewService {
 
     @Override
     public ReviewDTO update(int id, ReviewDTO dto) {
-        throw new UnsupportedOperationException("Not implemented yet");
+        ReviewDTO existing = getById(id);
+        existing.setPackageRating(dto.getPackageRating());
+        existing.setPackageComment(dto.getPackageComment());
+        if (dto.getEventId() != null) existing.setEventId(dto.getEventId());
+        if (dto.getPackageId() != null) existing.setPackageId(dto.getPackageId());
+        return reviewRepository.update(existing);
     }
 
     @Override

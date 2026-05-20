@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vendor Notifications | Ethereal Weddings</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+
+    <div class="sidebar-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h1 class="brand-font sidebar-logo">Ethereal</h1>
+                <span style="font-size: 0.7rem; color: var(--primary); letter-spacing: 2px;">VENDOR PORTAL</span>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="dashboard.html" class="sidebar-item" data-page="dashboard">
+                    <i class="fas fa-chart-line"></i> Dashboard
+                </a>
+                <a href="packages.html" class="sidebar-item" data-page="packages">
+                    <i class="fas fa-boxes"></i> My Packages
+                </a>
+                <a href="bookings.html" class="sidebar-item" data-page="bookings">
+                    <i class="fas fa-calendar-check"></i> Bookings
+                </a>
+                <a href="notifications.html" class="sidebar-item active" data-page="notifications" style="display: flex; align-items: center;">
+                    <i class="fas fa-bell"></i> Notifications
+                    <span id="notifBadge" class="badge" style="background: var(--danger); color: #fff; margin-left: auto; display: none; padding: 0.2rem 0.5rem; font-size: 0.7rem; border-radius: 10px;">0</span>
+                </a>
+            </nav>
+            <div style="padding: 1.5rem; border-top: 1px solid rgba(255,255,255,0.1);">
+                <a href="#" onclick="logout()" class="sidebar-item" style="color: var(--danger);">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="top-header">
+                <h2 class="brand-font">Notifications</h2>
+                
+                <div class="user-profile" style="display: flex; align-items: center; gap: 1rem;">
+                    <div style="text-align: right;">
+                        <div id="vendorName" style="font-weight: 600;">Vendor</div>
+                    </div>
+                    <div style="width: 40px; height: 40px; border-radius: 50%; background: var(--secondary); border: 1px solid var(--primary); color: var(--primary); display: flex; align-items: center; justify-content: center; font-weight: 700;">
+                        <span id="vendorInitial">V</span>
+                    </div>
+                </div>
+            </header>
+
+            <div class="card" style="padding: 2rem;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; border-bottom: 1px solid var(--border); padding-bottom: 1rem;">
+                    <h3 class="brand-font" style="margin: 0;">Notification Alerts</h3>
+                    <div style="display: flex; gap: 0.5rem;" id="filterGroup">
+                        <button class="btn btn-primary" onclick="filterNotifs('ALL')" id="btnFilterALL" style="padding: 0.4rem 1rem; font-size: 0.8rem; border-radius: 20px;">All</button>
+                        <button class="btn btn-outline" onclick="filterNotifs('NEW')" id="btnFilterNEW" style="padding: 0.4rem 1rem; font-size: 0.8rem; border-radius: 20px;">New Requests</button>
+                        <button class="btn btn-outline" onclick="filterNotifs('CANCELLED')" id="btnFilterCANCELLED" style="padding: 0.4rem 1rem; font-size: 0.8rem; border-radius: 20px;">Cancelled</button>
+                    </div>
+                </div>
+
+                <div id="notificationsList" style="display: flex; flex-direction: column; gap: 1rem;">
+                    <div class="text-center py-2">
+                        <i class="fas fa-circle-notch fa-spin text-primary"></i> Loading notifications...
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="../js/api.js"></script>
+    <script src="../js/components.js"></script>
+    <script src="../js/main.js"></script>
+    <script>
+        const user = requireAuth(['VENDOR']);
+        let loadedNotifications = [];
+        let activeFilter = 'ALL';
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            if (!user) return;
+
+            document.getElementById('vendorName').innerText = user.name;
+            document.getElementById('vendorInitial').innerText = user.name.charAt(0);
+
+            await loadNotifications();
+        });
+
+        async function loadNotifications() {
+            try {
+                // Fetch service requests
+                const bookings = await api.get(`/bookings/vendor/${user.id}`);
+                loadedNotifications = [];
+
+                bookings.forEach(b => {
+                    if (b.vendorStatus === 'PENDING') {
+                        loadedNotifications.push({
+                            id: b.bookingPackageId,
+                            type: 'NEW',
+                            title: 'New Service Request',
+                            message: `Customer <strong>${b.customerName || 'Client'}</strong> has requested your package <strong>${b.packageTitle}</strong> for their wedding on <strong>${formatDate(b.eventDate)}</strong>.`,
+                            date: b.updatedAt || b.createdAt,
+                            client: b.customerName || 'Client',
+                            eventDate: b.eventDate,
+                            packageTitle: b.packageTitle,
+                            location: b.location || 'Not Set'
+                        });
+                    } else if (b.vendorStatus === 'CANCELLED') {
+                        loadedNotifications.push({
+                            id: b.bookingPackageId,
+                            type: 'CANCELLED',
+                            title: 'Service Request Cancelled',
+                            message: `The booking request by customer <strong>${b.customerName || 'Client'}</strong> for package <strong>${b.packageTitle}</strong> on <strong>${formatDate(b.eventDate)}</strong> has been <strong style="color: var(--danger);">CANCELLED</strong> by the customer.`,
+                            date: b.updatedAt || b.createdAt,
+                            client: b.customerName || 'Client',
+                            eventDate: b.eventDate,
+                            packageTitle: b.packageTitle
+                        });
+                    } else if (b.vendorStatus === 'CONFIRMED') {
+                        loadedNotifications.push({
+                            id: b.bookingPackageId,
+                            type: 'CONFIRMED',
+                            title: 'Service Confirmed',
+                            message: `You confirmed the booking with <strong>${b.customerName || 'Client'}</strong> for package <strong>${b.packageTitle}</strong> scheduled on <strong>${formatDate(b.eventDate)}</strong>.`,
+                            date: b.updatedAt || b.createdAt,
+                            client: b.customerName || 'Client',
+                            eventDate: b.eventDate,
+                            packageTitle: b.packageTitle
+                        });
+                    } else if (b.vendorStatus === 'REJECTED') {
+                        loadedNotifications.push({
+                            id: b.bookingPackageId,
+                            type: 'REJECTED',
+                            title: 'Service Declined',
+                            message: `You declined the request from <strong>${b.customerName || 'Client'}</strong> for package <strong>${b.packageTitle}</strong> on <strong>${formatDate(b.eventDate)}</strong>.`,
+                            date: b.updatedAt || b.createdAt,
+                            client: b.customerName || 'Client',
+                            eventDate: b.eventDate,
+                            packageTitle: b.packageTitle
+                        });
+                    }
+                });
+
+                // Update unread badge in sidebar
+                const newRequestsCount = loadedNotifications.filter(n => n.type === 'NEW').length;
+                const badge = document.getElementById('notifBadge');
+                if (newRequestsCount > 0) {
+                    badge.innerText = newRequestsCount;
+                    badge.style.display = 'inline-block';
+                } else {
+                    badge.style.display = 'none';
+                }
+
+                renderNotifications();
+            } catch (error) {
+                console.error(error);
+                document.getElementById('notificationsList').innerHTML = '<div class="text-danger">Failed to load notifications.</div>';
+            }
+        }
+
+        function filterNotifs(filterType) {
+            activeFilter = filterType;
+            
+            // Toggle active classes on buttons
+            document.querySelectorAll('#filterGroup button').forEach(btn => {
+                btn.className = 'btn btn-outline';
+            });
+            document.getElementById(`btnFilter${filterType}`).className = 'btn btn-primary';
+
+            renderNotifications();
+        }
+
+        function renderNotifications() {
+            const list = document.getElementById('notificationsList');
+            let filtered = [];
+
+            if (activeFilter === 'ALL') {
+                filtered = loadedNotifications;
+            } else {
+                filtered = loadedNotifications.filter(n => n.type === activeFilter);
+            }
+
+            if (filtered.length === 0) {
+                list.innerHTML = `
+                    <div class="empty-state text-center" style="padding: 3rem;">
+                        <i class="fas fa-bell-slash text-muted" style="font-size: 3rem; margin-bottom: 1rem;"></i>
+                        <h4 class="brand-font">No Notifications</h4>
+                        <p class="text-muted">You have no notifications in this category.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // Sort chronologically by date (latest first)
+            filtered.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+            list.innerHTML = filtered.map(n => {
+                let icon = 'fa-bell';
+                let iconColor = 'var(--primary)';
+                
+                if (n.type === 'NEW') {
+                    icon = 'fa-plus-circle';
+                    iconColor = 'var(--primary)';
+                } else if (n.type === 'CANCELLED') {
+                    icon = 'fa-ban';
+                    iconColor = 'var(--danger)';
+                } else if (n.type === 'CONFIRMED') {
+                    icon = 'fa-check-circle';
+                    iconColor = 'var(--success)';
+                } else if (n.type === 'REJECTED') {
+                    icon = 'fa-times-circle';
+                    iconColor = 'var(--text-muted)';
+                }
+                
+                const timeStr = n.date ? new Date(n.date).toLocaleString('en-US', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                }) : 'Recently';
+
+                return `
+                    <div style="background: #fff; border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem; display: flex; gap: 1.5rem; align-items: flex-start; box-shadow: 0 4px 6px rgba(0,0,0,0.02); transition: transform 0.2s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
+                        <div style="font-size: 2rem; color: ${iconColor};">
+                            <i class="fas ${icon}"></i>
+                        </div>
+                        <div style="flex: 1;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                                <h4 style="margin: 0; font-size: 1.1rem; color: var(--text-dark);">${n.title}</h4>
+                                <span style="font-size: 0.8rem; color: var(--text-muted);"><i class="fas fa-clock"></i> ${timeStr}</span>
+                            </div>
+                            <p style="margin: 0 0 0.8rem 0; color: var(--text-dark); line-height: 1.5;">
+                                ${n.message}
+                            </p>
+                            ${n.type === 'NEW' ? `
+                                <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
+                                    <button onclick="updateStatus(${n.id}, 'CONFIRMED')" class="btn btn-primary" style="padding: 0.4rem 1rem; font-size: 0.8rem;">Confirm Request</button>
+                                    <button onclick="updateStatus(${n.id}, 'REJECTED')" class="btn btn-outline" style="padding: 0.4rem 1rem; font-size: 0.8rem; color: var(--danger); border-color: var(--danger);">Decline</button>
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        async function updateStatus(id, status) {
+            const action = status === 'CONFIRMED' ? 'confirm' : 'decline';
+            confirmModal(`Are you sure you want to ${action} this booking?`, async () => {
+                showLoader();
+                try {
+                    await api.put(`/bookings/package/${id}/status?status=${status}`);
+                    showToast(`Booking ${status.toLowerCase()}`, 'success');
+                    await loadNotifications();
+                } catch (error) {
+                    showToast('Failed to update status', 'error');
+                } finally {
+                    hideLoader();
+                }
+            });
+        }
+    </script>
+</body>
+</html>

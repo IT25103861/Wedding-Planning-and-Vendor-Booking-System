@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Event Details | Ethereal Weddings</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        .event-header-card {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: #fff;
+            padding: 2.5rem;
+            border-radius: 20px;
+            margin-bottom: 2rem;
+            box-shadow: 0 10px 30px rgba(183, 147, 94, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .event-header-card::after {
+            content: '\f140';
+            font-family: 'Font Awesome 5 Free';
+            font-weight: 900;
+            position: absolute;
+            right: -20px;
+            bottom: -20px;
+            font-size: 15rem;
+            opacity: 0.1;
+            transform: rotate(-15deg);
+        }
+
+        .budget-badge {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 0.8rem 1.5rem;
+            border-radius: 50px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.8rem;
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+
+        .package-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0 0.8rem;
+        }
+
+        .package-table tr {
+            background: #fff;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s;
+        }
+
+        .package-table tr:hover {
+            transform: scale(1.01);
+        }
+
+        .package-table td {
+            padding: 1.5rem;
+            border-top: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .package-table td:first-child {
+            border-left: 1px solid var(--border);
+            border-radius: 12px 0 0 12px;
+        }
+
+        .package-table td:last-child {
+            border-right: 1px solid var(--border);
+            border-radius: 0 12px 12px 0;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 4rem;
+            background: #fff;
+            border-radius: 20px;
+            border: 2px dashed var(--border);
+        }
+
+        /* Premium Tabbed Navigation System */
+        .packages-tabs-nav {
+            display: flex;
+            gap: 1.5rem;
+            border-bottom: 2px solid var(--border);
+            margin: 2rem 0 1.5rem 0;
+            padding-bottom: 0.5rem;
+        }
+
+        .tab-btn {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            padding: 0.5rem 1rem;
+            position: relative;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .tab-btn:hover {
+            color: var(--primary);
+        }
+
+        .tab-btn.active {
+            color: var(--primary);
+            font-weight: 700;
+        }
+
+        .tab-btn.active::after {
+            content: '';
+            position: absolute;
+            bottom: -0.65rem;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background-color: var(--primary);
+            border-radius: 3px;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from { transform: scaleX(0); }
+            to { transform: scaleX(1); }
+        }
+
+        .tab-count {
+            background-color: rgba(0, 0, 0, 0.05);
+            color: var(--text);
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 0.15rem 0.45rem;
+            border-radius: 20px;
+            margin-left: 0.4rem;
+            display: inline-block;
+            transition: all 0.3s ease;
+            vertical-align: middle;
+        }
+
+        .tab-btn.active .tab-count {
+            background-color: var(--primary);
+            color: #fff;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="sidebar-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h1 class="brand-font sidebar-logo">Ethereal</h1>
+                <span style="font-size: 0.7rem; color: var(--primary); letter-spacing: 2px;">CUSTOMER PORTAL</span>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="dashboard.html" class="sidebar-item">
+                    <i class="fas fa-th-large"></i> Dashboard
+                </a>
+                <a href="events.html" class="sidebar-item active">
+                    <i class="fas fa-calendar-alt"></i> My Events
+                </a>
+                <a href="packages.html" class="sidebar-item">
+                    <i class="fas fa-box-open"></i> Browse Packages
+                </a>
+                <a href="bookings.html" class="sidebar-item">
+                    <i class="fas fa-clipboard-list"></i> My Bookings
+                </a>
+                <a href="payments.html" class="sidebar-item">
+                    <i class="fas fa-wallet"></i> My Payments
+                </a>
+                <a href="notifications.html" class="sidebar-item">
+                    <i class="fas fa-bell"></i> Notifications
+                </a>
+                <a href="reviews.html" class="sidebar-item" data-page="reviews">
+                    <i class="fas fa-star"></i> Reviews
+                </a>
+            </nav>
+            <div style="padding: 1.5rem; border-top: 1px solid rgba(255,255,255,0.1);">
+                <a href="#" onclick="logout()" class="sidebar-item" style="color: var(--danger);">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </a>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <header class="top-header" style="justify-content: space-between;">
+                <button onclick="window.location.href='packages.html?eventId=' + eventId" class="btn btn-outline"
+                    style="border-radius: 50px;">
+                    <i class="fas fa-search"></i> EXPLORE CATEGORIES
+                </button>
+
+                <div class="search-container" style="position: relative; width: 350px;">
+                    <i class="fas fa-search"
+                        style="position: absolute; left: 1.2rem; top: 50%; transform: translateY(-50%); color: var(--text-muted);"></i>
+                    <input type="text" id="packageSearch" class="form-control"
+                        placeholder="Search for packages, vendors..."
+                        style="padding-left: 3rem; border-radius: 50px; height: 45px; border: 1px solid var(--border); box-shadow: 0 4px 15px rgba(0,0,0,0.03);">
+                </div>
+            </header>
+
+            <div id="eventHeader">
+                <!-- Header injected here -->
+            </div>
+
+            <div class="packages-tabs-nav">
+                <button class="tab-btn active" id="tabAll" onclick="switchTab('ALL')">
+                    <i class="fas fa-box-open" style="margin-right: 5px;"></i> Selected Packages <span class="tab-count" id="countAll">0</span>
+                </button>
+                <button class="tab-btn" id="tabAvailable" onclick="switchTab('AVAILABLE')">
+                    <i class="fas fa-check-circle" style="margin-right: 5px; color: var(--success);"></i> Available Packages <span class="tab-count" id="countAvailable">0</span>
+                </button>
+                <button class="tab-btn" id="tabPending" onclick="switchTab('PENDING')">
+                    <i class="fas fa-clock" style="margin-right: 5px; color: var(--warning);"></i> Pending Packages <span class="tab-count" id="countPending">0</span>
+                </button>
+                <button class="tab-btn" id="tabUnavailable" onclick="switchTab('UNAVAILABLE')">
+                    <i class="fas fa-times-circle" style="margin-right: 5px; color: var(--danger);"></i> Unavailable Packages <span class="tab-count" id="countUnavailable">0</span>
+                </button>
+            </div>
+
+            <div id="packagesContainer">
+                <table class="package-table" id="packagesTable" style="display: none;">
+                    <tbody id="packagesList">
+                        <!-- Packages injected here -->
+                    </tbody>
+                </table>
+                <div id="emptyState" class="empty-state" style="display: none;">
+                    <i class="fas fa-box-open" style="font-size: 3rem; color: var(--border); margin-bottom: 1rem;"></i>
+                    <h4 class="brand-font">No packages added yet</h4>
+                    <p class="text-muted mb-2">Start building your event by exploring categories.</p>
+                    <button onclick="window.location.href='packages.html?eventId=' + eventId"
+                        class="btn btn-primary">Browse Packages</button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="../js/api.js"></script>
+    <script src="../js/components.js"></script>
+    <script src="../js/main.js"></script>
+    <script>
+        const user = requireAuth(['CUSTOMER']);
+        const eventId = utils.getQueryParam('eventId');
+        let currentEvent = null;
+        let eventPackages = [];
+        let bookingPackages = [];
+
+        if (!eventId) window.location.href = 'events.html';
+
+        document.addEventListener('DOMContentLoaded', init);
+
+        async function init() {
+            showLoader();
+            try {
+                const [eventData, packagesData] = await Promise.all([
+                    api.get(`/events/${eventId}`),
+                    api.get(`/event-packages/event/${eventId}`)
+                ]);
+
+                currentEvent = eventData;
+                eventPackages = packagesData;
+
+                if (currentEvent.status !== 'PLANNING') {
+                    // Try to find booking and its package statuses
+                    try {
+                        const bookings = await api.get(`/bookings/customer/${user.id}`);
+                        const eventBooking = bookings.find(b => b.eventId === parseInt(eventId));
+                        if (eventBooking) {
+                            bookingPackages = await api.get(`/bookings/${eventBooking.bookingId}/packages`);
+                        }
+                    } catch (e) { console.error("Error fetching booking statuses", e); }
+                }
+
+                renderHeader();
+                renderPackages();
+
+
+
+                // Search handler
+                document.getElementById('packageSearch').addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        const query = e.target.value.trim();
+                        if (query) {
+                            window.location.href = `packages.html?eventId=${eventId}&search=${encodeURIComponent(query)}`;
+                        }
+                    }
+                });
+            } catch (error) {
+                console.error(error);
+                showToast('Failed to load event details', 'error');
+            } finally {
+                hideLoader();
+            }
+        }
+
+        function renderHeader() {
+            const header = document.getElementById('eventHeader');
+            const totalBudget = eventPackages.reduce((sum, p) => {
+                const bPkg = bookingPackages.find(bp => bp.eventPackageId === p.eventPackageId);
+                const isRejected = bPkg && bPkg.vendorStatus === 'REJECTED';
+                if (isRejected) {
+                    return sum;
+                }
+                return sum + (p.packagePrice * (p.quantity || 1));
+            }, 0);
+
+            let actionBtn = '';
+            if (currentEvent.status !== 'PLANNING') {
+                let statusUpper = currentEvent.status.toUpperCase();
+                const displayStatus = statusUpper === 'REJECTED' ? 'PENDING' : statusUpper.replace(/_/g, ' ');
+                const isConfirmed = statusUpper === 'CONFIRMED';
+                const badgeClass = isConfirmed ? 'badge-confirmed' : 'badge-pending';
+                const iconClass = isConfirmed ? 'fa-check-circle' : 'fa-clock';
+                actionBtn = `
+                    <div class="badge ${badgeClass}" style="padding: 0.8rem 1.5rem; border-radius: 50px;">
+                        <i class="fas ${iconClass}"></i> ${displayStatus}
+                    </div>
+                `;
+            }
+
+            header.innerHTML = `
+                <div class="event-header-card">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                        <div>
+                            <span class="badge" style="background: rgba(255,255,255,0.2); color: #fff; margin-bottom: 1rem; border: 1px solid rgba(255,255,255,0.3);">${currentEvent.eventType}</span>
+                            <h2 class="brand-font" style="font-size: 2.5rem; margin-bottom: 0.5rem;">${currentEvent.eventName}</h2>
+                            <div style="font-size: 1.1rem; opacity: 0.9;">
+                                <i class="fas fa-calendar-day"></i> 
+                                <span id="eventDateDisplay" 
+                                    style="${currentEvent.status === 'PLANNING' ? 'cursor: pointer; text-decoration: underline dashed; text-underline-offset: 4px;' : ''}" 
+                                    ${currentEvent.status === 'PLANNING' ? 'onclick="changeEventDate()" title="Click to change date"' : ''}>
+                                    ${formatDate(currentEvent.eventDate)}
+                                </span>
+                                <span style="margin-left: 1.5rem;">
+                                    <i class="fas fa-map-marker-alt"></i> 
+                                    ${(() => {
+                                        const allVenues = eventPackages.filter(p => p.categoryName && p.categoryName.includes('Venue'));
+                                        let activeVenue = null;
+                                        for (const p of allVenues) {
+                                            const bPkg = bookingPackages.find(bp => bp.eventPackageId === p.eventPackageId);
+                                            if (bPkg) {
+                                                const status = bPkg.vendorStatus ? bPkg.vendorStatus.toUpperCase() : '';
+                                                if (status !== 'REJECTED' && status !== 'UNAVAILABLE') {
+                                                    activeVenue = p;
+                                                    break;
+                                                }
+                                            } else {
+                                                activeVenue = p;
+                                                break;
+                                            }
+                                        }
+
+                                        if (currentEvent.location) {
+                                            const isRejectedLocation = allVenues.some(p => {
+                                                if (p.packageTitle !== currentEvent.location) return false;
+                                                const bPkg = bookingPackages.find(bp => bp.eventPackageId === p.eventPackageId);
+                                                if (bPkg) {
+                                                    const status = bPkg.vendorStatus ? bPkg.vendorStatus.toUpperCase() : '';
+                                                    return status === 'REJECTED' || status === 'UNAVAILABLE';
+                                                }
+                                                return false;
+                                            });
+                                            if (!isRejectedLocation) {
+                                                return currentEvent.location;
+                                            }
+                                        }
+                                        return activeVenue ? activeVenue.packageTitle + ' (Detected)' : 'Location Not Set';
+                                    })()}
+                                </span>
+                            </div>
+                        </div>
+                        <div style="text-align: right; display: flex; flex-direction: column; gap: 1rem; align-items: flex-end;">
+                            <div class="budget-badge">
+                                <i class="fas fa-wallet"></i>
+                                ${formatLKR(totalBudget)}
+                            </div>
+                            ${actionBtn || ''}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        async function changeEventDate() {
+            if (currentEvent.status !== 'PLANNING') {
+                return;
+            }
+
+            const { value: newDate } = await Swal.fire({
+                title: 'Change Event Date',
+                input: 'date',
+                inputValue: currentEvent.eventDate,
+                showCancelButton: true,
+                confirmButtonColor: 'var(--primary)',
+                inputValidator: (value) => {
+                    if (!value) return 'You need to select a date!';
+                    if (new Date(value) < new Date(new Date().setHours(0, 0, 0, 0))) {
+                        return 'Date must be today or in the future!';
+                    }
+                }
+            });
+
+            if (newDate && newDate !== currentEvent.eventDate) {
+                showLoader();
+                try {
+                    const updatedEvent = { ...currentEvent, eventDate: newDate };
+                    await api.put(`/events/${currentEvent.eventId}`, updatedEvent);
+                    hideLoader();
+
+                    Swal.fire({
+                        title: 'Updated!',
+                        text: 'Event date has been updated successfully.',
+                        icon: 'success',
+                        confirmButtonColor: 'var(--primary)'
+                    }).then(() => {
+                        window.location.reload();
+                    });
+                } catch (error) {
+                    hideLoader();
+                    console.error(error);
+                    Swal.fire('Error', 'Failed to update event date.', 'error');
+                }
+            }
+        }
+
+        let activeTab = 'ALL';
+
+        function switchTab(tab) {
+            activeTab = tab;
+            
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            if (tab === 'ALL') document.getElementById('tabAll').classList.add('active');
+            if (tab === 'AVAILABLE') document.getElementById('tabAvailable').classList.add('active');
+            if (tab === 'PENDING') document.getElementById('tabPending').classList.add('active');
+            if (tab === 'UNAVAILABLE') document.getElementById('tabUnavailable').classList.add('active');
+            
+            renderPackages();
+        }
+
+        function renderPackages() {
+            const list = document.getElementById('packagesList');
+            const table = document.getElementById('packagesTable');
+            const empty = document.getElementById('emptyState');
+
+            // Calculate dynamic counts for all tabs
+            const allCount = eventPackages.filter(p => {
+                const bPkg = bookingPackages.find(bp => bp.eventPackageId === p.eventPackageId);
+                if (currentEvent.status === 'PLANNING') return true;
+                return !bPkg;
+            }).length;
+
+            const availableCount = eventPackages.filter(p => {
+                const bPkg = bookingPackages.find(bp => bp.eventPackageId === p.eventPackageId);
+                if (currentEvent.status === 'PLANNING') return false;
+                const status = bPkg ? bPkg.vendorStatus.toUpperCase() : '';
+                return status === 'APPROVED' || status === 'CONFIRMED';
+            }).length;
+
+            const pendingCount = eventPackages.filter(p => {
+                const bPkg = bookingPackages.find(bp => bp.eventPackageId === p.eventPackageId);
+                if (currentEvent.status === 'PLANNING') return false;
+                const status = bPkg ? bPkg.vendorStatus.toUpperCase() : '';
+                return status === 'PENDING';
+            }).length;
+
+            const unavailableCount = eventPackages.filter(p => {
+                const bPkg = bookingPackages.find(bp => bp.eventPackageId === p.eventPackageId);
+                if (currentEvent.status === 'PLANNING') return false;
+                const status = bPkg ? bPkg.vendorStatus.toUpperCase() : '';
+                return status === 'REJECTED';
+            }).length;
+
+            // Update DOM counts dynamically
+            const countAllEl = document.getElementById('countAll');
+            const countAvailableEl = document.getElementById('countAvailable');
+            const countPendingEl = document.getElementById('countPending');
+            const countUnavailableEl = document.getElementById('countUnavailable');
+
+            if (countAllEl) countAllEl.innerText = allCount;
+            if (countAvailableEl) countAvailableEl.innerText = availableCount;
+            if (countPendingEl) countPendingEl.innerText = pendingCount;
+            if (countUnavailableEl) countUnavailableEl.innerText = unavailableCount;
+
+            if (eventPackages.length === 0) {
+                table.style.display = 'none';
+                empty.style.display = 'block';
+                return;
+            }
+
+            table.style.display = 'table';
+            empty.style.display = 'none';
+
+            // Filter packages based on activeTab
+            let filteredPackages = eventPackages;
+            if (activeTab === 'ALL') {
+                filteredPackages = eventPackages.filter(p => {
+                    const bPkg = bookingPackages.find(bp => bp.eventPackageId === p.eventPackageId);
+                    if (currentEvent.status === 'PLANNING') return true;
+                    return !bPkg;
+                });
+            } else if (activeTab === 'AVAILABLE') {
+                filteredPackages = eventPackages.filter(p => {
+                    const bPkg = bookingPackages.find(bp => bp.eventPackageId === p.eventPackageId);
+                    if (currentEvent.status === 'PLANNING') return false;
+                    const status = bPkg ? bPkg.vendorStatus.toUpperCase() : '';
+                    return status === 'APPROVED' || status === 'CONFIRMED';
+                });
+            } else if (activeTab === 'PENDING') {
+                filteredPackages = eventPackages.filter(p => {
+                    const bPkg = bookingPackages.find(bp => bp.eventPackageId === p.eventPackageId);
+                    if (currentEvent.status === 'PLANNING') return false;
+                    const status = bPkg ? bPkg.vendorStatus.toUpperCase() : '';
+                    return status === 'PENDING';
+                });
+            } else if (activeTab === 'UNAVAILABLE') {
+                filteredPackages = eventPackages.filter(p => {
+                    const bPkg = bookingPackages.find(bp => bp.eventPackageId === p.eventPackageId);
+                    if (currentEvent.status === 'PLANNING') return false;
+                    const status = bPkg ? bPkg.vendorStatus.toUpperCase() : '';
+                    return status === 'REJECTED';
+                });
+            }
+
+            let listContent = '';
+            if (filteredPackages.length === 0) {
+                let emptyMsg = '';
+                let iconClass = 'fa-box-open';
+                if (activeTab === 'AVAILABLE') {
+                    emptyMsg = 'No available/approved packages yet.';
+                    iconClass = 'fa-check-circle';
+                } else if (activeTab === 'PENDING') {
+                    emptyMsg = 'No pending approval packages.';
+                    iconClass = 'fa-clock';
+                } else if (activeTab === 'UNAVAILABLE') {
+                    emptyMsg = 'No unavailable/rejected packages.';
+                    iconClass = 'fa-times-circle';
+                }
+                listContent = `
+                    <tr>
+                        <td colspan="5" style="text-align: center; padding: 4rem; color: var(--text-muted); border: none; background: transparent;">
+                            <i class="fas ${iconClass}" style="font-size: 2.5rem; margin-bottom: 1rem; color: #ddd; display: block;"></i>
+                            <span style="font-size: 1.1rem; font-weight: 500;">${emptyMsg}</span>
+                        </td>
+                    </tr>
+                `;
+            } else {
+                listContent = filteredPackages.map(p => {
+                    const bPkg = bookingPackages.find(bp => bp.eventPackageId === p.eventPackageId);
+                    let statusHtml = '';
+                    let actionHtml = '';
+                    if (currentEvent.status === 'PLANNING') {
+                        actionHtml = `
+                            <button onclick="removePackage(${p.eventPackageId})" class="btn" style="color: var(--danger); background: #fff1f1; border-radius: 50%; width: 40px; height: 40px; padding: 0;">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        `;
+                    }
+
+                    if (currentEvent.status !== 'PLANNING' && bPkg) {
+                        const status = bPkg.vendorStatus.toUpperCase();
+                        const isSuccess = status === 'APPROVED' || status === 'CONFIRMED';
+                        const statusClass = isSuccess ? 'badge-confirmed' : (status === 'REJECTED' ? 'badge-danger' : 'badge-pending');
+
+                        let displayStatus = status;
+                        if (status === 'APPROVED' || status === 'CONFIRMED') {
+                            displayStatus = 'AVAILABLE';
+                        } else if (status === 'REJECTED') {
+                            displayStatus = 'UNAVAILABLE';
+                        }
+
+                        statusHtml = `
+                            <div style="margin-top: 0.5rem;">
+                                <span class="badge ${statusClass}" style="font-size: 0.75rem;">
+                                    <i class="fas ${isSuccess ? 'fa-check-circle' : (status === 'REJECTED' ? 'fa-times-circle' : 'fa-clock')}"></i> 
+                                    ${displayStatus}
+                                </span>
+                                ${status === 'REJECTED' ? `<div style="color: var(--danger); font-size: 0.7rem; margin-top: 0.2rem;">${bPkg.rejectionReason || 'Please select another package'}</div>` : ''}
+                            </div>
+                        `;
+                    }
+
+                    return `
+                    <tr>
+                        <td style="width: 80px; text-align: center;">
+                            <div style="width: 50px; height: 50px; background: var(--bg-light); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: var(--primary);">
+                                <i class="fas ${p.categoryName.includes('Venue') ? 'fa-hotel' : 'fa-gem'}"></i>
+                            </div>
+                        </td>
+                        <td>
+                            <div style="font-weight: 700; font-size: 1.1rem;">${p.packageTitle}</div>
+                            <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.2rem;">${p.notes || 'No extra notes'}</div>
+                            ${statusHtml}
+                        </td>
+                        <td style="text-align: center; width: 100px;">
+                            <div style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;">Qty</div>
+                            <div style="font-weight: 700;">${p.quantity || 1}</div>
+                        </td>
+                        <td style="text-align: right; width: 200px;">
+                            <div style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;">Price</div>
+                            <div style="font-weight: 700; color: var(--primary); font-size: 1.1rem;">${formatLKR(p.packagePrice)}</div>
+                        </td>
+                        <td style="width: 80px; text-align: center;">
+                            ${actionHtml}
+                        </td>
+                    </tr>
+                `}).join('');
+            }
+
+            let showConfirmButton = false;
+            if (currentEvent.status === 'PLANNING') {
+                showConfirmButton = eventPackages.length > 0;
+            } else {
+                showConfirmButton = eventPackages.some(p => {
+                    const bPkg = bookingPackages.find(bp => bp.eventPackageId === p.eventPackageId);
+                    return !bPkg || (bPkg.vendorStatus && bPkg.vendorStatus.toUpperCase() === 'PENDING');
+                });
+            }
+
+            if (showConfirmButton && activeTab === 'ALL') {
+                listContent += `
+                    <tr>
+                        <td colspan="5" style="border: none; background: transparent; padding: 2rem 0; text-align: right;">
+                            <button onclick="confirmEventWorkflow()" class="btn btn-primary" style="padding: 1.2rem 2.5rem; border-radius: 50px; font-weight: 700; font-size: 1.1rem; box-shadow: 0 10px 25px rgba(183, 147, 94, 0.3);">
+                                <i class="fas fa-paper-plane"></i> REQUEST VENDOR AVAILABILITY
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }
+
+            if (activeTab === 'AVAILABLE' && availableCount > 0 && currentEvent.status !== 'CONFIRMED' && currentEvent.status !== 'PAID') {
+                listContent += `
+                    <tr>
+                        <td colspan="5" style="border: none; background: transparent; padding: 2rem 0; text-align: right;">
+                            <button onclick="customerConfirmBookingWorkflow()" class="btn btn-primary" style="padding: 1.2rem 2.5rem; border-radius: 50px; font-weight: 700; font-size: 1.1rem; background-color: #10b981; border-color: #10b981; box-shadow: 0 10px 25px rgba(16, 185, 129, 0.3);">
+                                <i class="fas fa-check-double"></i> CONFIRM BOOKING
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }
+
+            list.innerHTML = listContent;
+        }
+
+        async function confirmEventWorkflow() {
+            // Find venue package for location
+            const venuePkg = eventPackages.find(p => {
+                if (!p.categoryName || !p.categoryName.includes('Venue')) return false;
+                const bPkg = bookingPackages.find(bp => bp.eventPackageId === p.eventPackageId);
+                if (bPkg) {
+                    const status = bPkg.vendorStatus ? bPkg.vendorStatus.toUpperCase() : '';
+                    if (status === 'REJECTED' || status === 'UNAVAILABLE') {
+                        return false;
+                    }
+                }
+                return true;
+            });
+            
+            let suggestedLocation = '';
+            if (currentEvent.location) {
+                const isRejectedLocation = eventPackages.some(p => {
+                    if (p.packageTitle !== currentEvent.location) return false;
+                    const bPkg = bookingPackages.find(bp => bp.eventPackageId === p.eventPackageId);
+                    if (bPkg) {
+                        const status = bPkg.vendorStatus ? bPkg.vendorStatus.toUpperCase() : '';
+                        return status === 'REJECTED' || status === 'UNAVAILABLE';
+                    }
+                    return false;
+                });
+                if (!isRejectedLocation) {
+                    suggestedLocation = currentEvent.location;
+                }
+            }
+            if (!suggestedLocation && venuePkg) {
+                suggestedLocation = venuePkg.packageTitle;
+            }
+            if (!suggestedLocation) {
+                suggestedLocation = 'Not Set';
+            }
+
+            showLoader();
+            try {
+                await api.post(`/bookings/confirm-event/${eventId}?location=${encodeURIComponent(suggestedLocation)}&paymentType=FULL`);
+                hideLoader();
+
+                await Swal.fire({
+                    title: 'Success!',
+                    text: 'Your request has been sent to vendors for approval.',
+                    icon: 'success',
+                    confirmButtonColor: '#b7935e'
+                });
+                window.location.reload();
+            } catch (error) {
+                hideLoader();
+                showToast('Failed to request vendor availability', 'error');
+            }
+        }
+
+        async function customerConfirmBookingWorkflow() {
+            try {
+                showLoader();
+                const bookings = await api.get(`/bookings/customer/${user.id}`);
+                const booking = bookings.find(b => b.eventId === parseInt(eventId));
+                hideLoader();
+                if (!booking) {
+                    showToast('Booking not found', 'error');
+                    return;
+                }
+
+                // Find venue package for location check
+                const venuePkg = eventPackages.find(p => {
+                    if (!p.categoryName || !p.categoryName.includes('Venue')) return false;
+                    const bPkg = bookingPackages.find(bp => bp.eventPackageId === p.eventPackageId);
+                    if (bPkg) {
+                        const status = bPkg.vendorStatus ? bPkg.vendorStatus.toUpperCase() : '';
+                        if (status === 'REJECTED' || status === 'UNAVAILABLE') {
+                            return false;
+                        }
+                    }
+                    return true;
+                });
+                const isVenueSelected = !!venuePkg;
+                
+                let suggestedLocation = '';
+                if (currentEvent.location) {
+                    const isRejectedLocation = eventPackages.some(p => {
+                        if (p.packageTitle !== currentEvent.location) return false;
+                        const bPkg = bookingPackages.find(bp => bp.eventPackageId === p.eventPackageId);
+                        if (bPkg) {
+                            const status = bPkg.vendorStatus ? bPkg.vendorStatus.toUpperCase() : '';
+                            return status === 'REJECTED' || status === 'UNAVAILABLE';
+                        }
+                        return false;
+                    });
+                    if (!isRejectedLocation) {
+                        suggestedLocation = currentEvent.location;
+                    }
+                }
+                if (!suggestedLocation && venuePkg) {
+                    suggestedLocation = venuePkg.packageTitle;
+                }
+
+                const { value: formValues } = await Swal.fire({
+                    title: 'Finalize Your Booking',
+                    html: `
+                        <div style="text-align: left;">
+                            <label class="form-label" style="font-weight: 600; margin-bottom: 0.5rem; display: block;">Event Location / Venue Address</label>
+                            <input id="swal-location" class="swal2-input" placeholder="Venue address..." value="${suggestedLocation}" ${isVenueSelected ? 'readonly' : ''} style="width: 85%; margin: 0.5rem auto 1.5rem auto; display: block; ${isVenueSelected ? 'background-color: #f3f4f6; color: #4b5563; border: 1px solid #d1d5db; cursor: not-allowed;' : ''}">
+                        </div>
+                    `,
+                    focusConfirm: false,
+                    showCancelButton: true,
+                    confirmButtonText: 'CONFIRM & BOOK',
+                    confirmButtonColor: '#10b981',
+                    cancelButtonColor: '#bdc3c7',
+                    preConfirm: () => {
+                        const location = document.getElementById('swal-location').value.trim();
+                        if (!location) {
+                            Swal.showValidationMessage('Location is required!');
+                            return false;
+                        }
+                        return { location };
+                    }
+                });
+
+                if (formValues) {
+                    showLoader();
+                    await api.post(`/bookings/${booking.bookingId}/customer-confirm?location=${encodeURIComponent(formValues.location)}`);
+                    hideLoader();
+
+                    await Swal.fire({
+                        title: 'Booking Confirmed!',
+                        text: 'Your booking has been successfully confirmed. You can now proceed to make payment.',
+                        icon: 'success',
+                        confirmButtonColor: '#10b981'
+                    });
+                    window.location.reload();
+                }
+            } catch (error) {
+                hideLoader();
+                showToast('Failed to confirm booking', 'error');
+            }
+        }
+
+        async function removePackage(id) {
+            Swal.fire({
+                title: 'Remove Package?',
+                text: "Are you sure you want to remove this service from your event?",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#e74c3c',
+                cancelButtonColor: '#bdc3c7',
+                confirmButtonText: 'Yes, remove it'
+            }).then(async (result) => {
+                if (result.isConfirmed) {
+                    showLoader();
+                    try {
+                        await api.delete(`/event-packages/${id}`);
+                        showToast('Package removed', 'success');
+                        init(); // Refresh
+                    } catch (error) {
+                        showToast('Failed to remove package', 'error');
+                    } finally {
+                        hideLoader();
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+
+</html>

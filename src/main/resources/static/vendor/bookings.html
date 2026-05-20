@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Bookings | Ethereal Weddings</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+
+    <div class="sidebar-layout">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h1 class="brand-font sidebar-logo">Ethereal</h1>
+                <span style="font-size: 0.7rem; color: var(--primary); letter-spacing: 2px;">VENDOR PORTAL</span>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="dashboard.html" class="sidebar-item" data-page="dashboard">
+                    <i class="fas fa-chart-line"></i> Dashboard
+                </a>
+                <a href="packages.html" class="sidebar-item" data-page="packages">
+                    <i class="fas fa-boxes"></i> My Packages
+                </a>
+                <a href="bookings.html" class="sidebar-item active" data-page="bookings">
+                    <i class="fas fa-calendar-check"></i> Bookings
+                </a>
+                <a href="notifications.html" class="sidebar-item" data-page="notifications" style="display: flex; align-items: center;">
+                    <i class="fas fa-bell"></i> Notifications
+                    <span id="notifBadge" class="badge" style="background: var(--danger); color: #fff; margin-left: auto; display: none; padding: 0.2rem 0.5rem; font-size: 0.7rem; border-radius: 10px;">0</span>
+                </a>
+            </nav>
+            <div style="padding: 1.5rem; border-top: 1px solid rgba(255,255,255,0.1);">
+                <a href="#" onclick="logout()" class="sidebar-item" style="color: var(--danger);">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </a>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <header class="top-header">
+                <h2 class="brand-font">Service Requests</h2>
+            </header>
+
+            <div class="card">
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Client</th>
+                                <th>Package</th>
+                                <th>Event Date</th>
+                                <th>Location</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="vendorBookingsTable">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="../js/api.js"></script>
+    <script src="../js/components.js"></script>
+    <script src="../js/main.js"></script>
+    <script>
+        const user = requireAuth(['VENDOR']);
+
+        document.addEventListener('DOMContentLoaded', loadVendorBookings);
+
+        async function loadVendorBookings() {
+            showLoader();
+            try {
+                const myRequests = await api.get(`/bookings/vendor/${user.id}`);
+                renderBookings(myRequests);
+
+                // Update sidebar notification badge
+                const pendingCount = myRequests.filter(b => b.vendorStatus === 'PENDING').length;
+                const badge = document.getElementById('notifBadge');
+                if (pendingCount > 0) {
+                    badge.innerText = pendingCount;
+                    badge.style.display = 'inline-block';
+                } else {
+                    badge.style.display = 'none';
+                }
+            } catch (error) {
+                showToast('Failed to load bookings', 'error');
+            } finally {
+                hideLoader();
+            }
+        }
+
+        function renderBookings(bookings) {
+            const tableBody = document.getElementById('vendorBookingsTable');
+            if (bookings.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="6" class="text-center text-muted">No service requests found yet.</td></tr>';
+                return;
+            }
+
+            // Sort bookings chronologically by event date (descending: latest event first)
+            bookings.sort((a, b) => {
+                if (!a.eventDate) return 1;
+                if (!b.eventDate) return -1;
+                return new Date(b.eventDate) - new Date(a.eventDate);
+            });
+
+            tableBody.innerHTML = bookings.map(b => {
+                const canManage = b.vendorStatus === 'PENDING';
+                
+                return `
+                    <tr>
+                        <td>
+                            <div style="font-weight: 600;">${b.customerName || 'Client'}</div>
+                        </td>
+                        <td>${b.packageTitle || 'Service'}</td>
+                        <td>${formatDate(b.eventDate)}</td>
+                        <td>${b.location || 'Not Set'}</td>
+                        <td>
+                            <div style="margin-bottom: 0.3rem;">
+                                ${statusBadge(b.vendorStatus)}
+                            </div>
+                        </td>
+                        <td>
+                            <div style="display: flex; gap: 0.5rem;">
+                                ${canManage ? `
+                                    <button onclick="updateStatus(${b.bookingPackageId}, 'CONFIRMED')" class="btn btn-primary" style="padding: 0.3rem 0.6rem; font-size: 0.8rem;">Confirm</button>
+                                    <button onclick="updateStatus(${b.bookingPackageId}, 'REJECTED')" class="btn btn-outline" style="padding: 0.3rem 0.6rem; font-size: 0.8rem; color: var(--danger); border-color: var(--danger);">Decline</button>
+                                ` : (b.vendorStatus === 'REJECTED' ? '<span style="color: var(--danger); font-size: 0.8rem; font-weight: 700;"><i class="fas fa-times"></i> Declined</span>' : '<span style="color: #4CAF50; font-size: 0.8rem; font-weight: 700;"><i class="fas fa-check"></i> Processed</span>')}
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        async function updateStatus(id, status) {
+            const action = status === 'CONFIRMED' ? 'confirm' : 'decline';
+            confirmModal(`Are you sure you want to ${action} this booking?`, async () => {
+                showLoader();
+                try {
+                    // We need a new endpoint to update booking_package status
+                    await api.put(`/bookings/package/${id}/status?status=${status}`);
+                    showToast(`Booking ${status.toLowerCase()}`, 'success');
+                    loadVendorBookings();
+                } catch (error) {
+                    showToast('Failed to update booking status', 'error');
+                } finally {
+                    hideLoader();
+                }
+            });
+        }
+    </script>
+</body>
+</html>

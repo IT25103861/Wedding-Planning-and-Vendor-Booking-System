@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Review Management | Admin Portal</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        .review-card {
+            background-color: var(--bg-card);
+            border-radius: var(--radius);
+            padding: 1.8rem;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+            position: relative;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            min-height: 220px;
+        }
+        .review-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-hover);
+        }
+        .star-rating-static {
+            color: #ffd700;
+            display: flex;
+            gap: 3px;
+            margin-bottom: 0.8rem;
+        }
+        .review-meta {
+            font-size: 0.82rem;
+            color: var(--text-muted);
+            margin-top: 1rem;
+            border-top: 1px solid var(--border);
+            padding-top: 0.8rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .review-actions {
+            display: flex;
+            gap: 0.5rem;
+            justify-content: flex-end;
+            margin-top: 1rem;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h1 class="brand-font sidebar-logo">Ethereal</h1>
+                <span style="font-size: 0.7rem; color: var(--primary); letter-spacing: 2px;">ADMINISTRATOR</span>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="dashboard.html" class="sidebar-item" data-page="dashboard">
+                    <i class="fas fa-chart-pie"></i> Dashboard
+                </a>
+                <a href="vendors.html" class="sidebar-item" data-page="vendors">
+                    <i class="fas fa-store"></i> Vendors
+                </a>
+                <a href="customers.html" class="sidebar-item" data-page="customers">
+                    <i class="fas fa-users"></i> Customers
+                </a>
+                <a href="bookings.html" class="sidebar-item" data-page="bookings">
+                    <i class="fas fa-book"></i> Bookings
+                </a>
+                <a href="finance.html" class="sidebar-item" data-page="finance">
+                    <i class="fas fa-money-bill-wave"></i> Finance
+                </a>
+                <a href="categories.html" class="sidebar-item" data-page="categories">
+                    <i class="fas fa-tags"></i> Categories
+                </a>
+                <a href="reviews.html" class="sidebar-item active" data-page="reviews">
+                    <i class="fas fa-star"></i> Reviews
+                </a>
+            </nav>
+            <div style="padding: 1.5rem; border-top: 1px solid rgba(255,255,255,0.1);">
+                <a href="#" onclick="logout()" class="sidebar-item" style="color: var(--danger);">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="top-header">
+                <h2 class="brand-font">Review Management</h2>
+                <div class="user-profile" style="display: flex; align-items: center; gap: 1rem;">
+                    <span id="adminName" style="font-weight: 600;">Administrator</span>
+                    <div style="width: 40px; height: 40px; border-radius: 50%; background: var(--secondary); color: var(--primary); border: 1px solid var(--primary); display: flex; align-items: center; justify-content: center; font-weight: 700;">
+                        <span id="adminInitial">A</span>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Stats Grid -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.5rem; margin-bottom: 2.5rem;">
+                <div class="card stat-card">
+                    <span class="stat-label">Total Platform Reviews</span>
+                    <span class="stat-value" id="totalReviewsCount">0</span>
+                </div>
+                <div class="card stat-card">
+                    <span class="stat-label">Average Platform Rating</span>
+                    <span class="stat-value" id="avgPlatformRating">0.0</span>
+                </div>
+                <div class="card stat-card">
+                    <span class="stat-label">Packages Reviewed</span>
+                    <span class="stat-value" id="uniquePackagesCount">0</span>
+                </div>
+            </div>
+
+            <div class="section-header mt-4">
+                <h3 class="brand-font">All Customer Reviews</h3>
+                <p class="text-muted">Manage feedback submitted across the platform</p>
+            </div>
+
+            <!-- Reviews Grid -->
+            <div id="reviewsGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.5rem; margin-bottom: 3rem;">
+                <!-- Review cards will be injected dynamically -->
+            </div>
+        </main>
+    </div>
+
+    <script src="../js/api.js"></script>
+    <script src="../js/components.js"></script>
+    <script src="../js/main.js"></script>
+    <script>
+        const user = requireAuth(['ADMIN']);
+        let allPackages = [];
+        let allReviews = [];
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            if (!user) return;
+            document.getElementById('adminName').innerText = user.name;
+            document.getElementById('adminInitial').innerText = user.name.charAt(0);
+            await loadData();
+        });
+
+        async function loadData() {
+            showLoader();
+            try {
+                // Fetch packages and reviews concurrently
+                const [packages, reviews] = await Promise.all([
+                    api.get('/packages'),
+                    api.get('/reviews')
+                ]);
+
+                allPackages = packages || [];
+                allReviews = reviews || [];
+
+                renderStats();
+                renderReviews();
+            } catch (error) {
+                console.error("Failed to load reviews data:", error);
+                showToast('Failed to load reviews data', 'error');
+            } finally {
+                hideLoader();
+            }
+        }
+
+        function renderStats() {
+            document.getElementById('totalReviewsCount').innerText = allReviews.length;
+
+            const uniquePackages = new Set(allReviews.map(r => r.packageId));
+            document.getElementById('uniquePackagesCount').innerText = uniquePackages.size;
+
+            if (allReviews.length === 0) {
+                document.getElementById('avgPlatformRating').innerText = '0.0';
+                return;
+            }
+
+            const totalRating = allReviews.reduce((sum, r) => sum + (r.packageRating || 0), 0);
+            const avg = totalRating / allReviews.length;
+            document.getElementById('avgPlatformRating').innerText = avg.toFixed(1);
+        }
+
+        function renderReviews() {
+            const grid = document.getElementById('reviewsGrid');
+            
+            if (allReviews.length === 0) {
+                grid.innerHTML = `
+                    <div class="card text-center" style="grid-column: 1/-1; padding: 3rem;">
+                        <i class="far fa-star" style="font-size: 3.5rem; color: var(--primary); opacity: 0.5; margin-bottom: 1.5rem;"></i>
+                        <h4 class="brand-font mb-1" style="font-size: 1.5rem;">No Reviews Found</h4>
+                        <p class="text-muted">No package reviews have been written by any customer yet.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            grid.innerHTML = [...allReviews].reverse().map(r => {
+                const pkg = allPackages.find(p => p.packageId === r.packageId);
+
+                const packageTitle = pkg ? pkg.title : `Package #${r.packageId}`;
+                const vendorName = pkg ? (pkg.vendorName || 'Ethereal Partner') : 'Vendor';
+
+                let starsHtml = '';
+                for (let i = 1; i <= 5; i++) {
+                    starsHtml += `<i class="${i <= r.packageRating ? 'fas' : 'far'} fa-star"></i>`;
+                }
+
+                // Metadata badge showing Customer Name
+                let metaHtml = `<span><i class="fas fa-user-circle"></i> Reviewed by <strong>${r.customerName || 'Customer #'+r.customerId}</strong></span>
+                            <span class="badge badge-confirmed" style="background: rgba(76, 175, 80, 0.15); color: #4CAF50; font-size: 0.72rem; font-weight: 700; border: 1px solid rgba(76, 175, 80, 0.25);"><i class="fas fa-check-circle"></i> Verified</span>`;
+
+                // Admin delete button
+                let actionsHtml = `
+                    <div class="review-actions">
+                        <button onclick="deleteReview(${r.reviewId})" class="btn btn-outline" style="padding: 0.4rem 0.8rem; font-size: 0.78rem; border-color: var(--danger); color: var(--danger);">
+                            <i class="fas fa-trash"></i> Delete Review
+                        </button>
+                    </div>
+                `;
+
+                return `
+                    <div class="review-card">
+                        <div>
+                            <div class="star-rating-static">
+                                ${starsHtml}
+                            </div>
+                            <h4 class="brand-font" style="font-size: 1.3rem; color: var(--secondary); margin-bottom: 0.4rem; line-height: 1.2;">
+                                ${packageTitle}
+                            </h4>
+                            <div style="font-size: 0.85rem; color: var(--primary); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.8rem;">
+                                by ${vendorName}
+                            </div>
+                            <p style="font-style: italic; color: var(--text-dark); line-height: 1.5; font-size: 0.95rem; margin-top: 0.5rem; word-break: break-word;">
+                                "${r.packageComment}"
+                            </p>
+                        </div>
+                        <div>
+                            <div class="review-meta">
+                                ${metaHtml}
+                            </div>
+                            ${actionsHtml}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        async function deleteReview(id) {
+            confirmModal('Are you sure you want to delete this review?', async () => {
+                showLoader();
+                try {
+                    await api.delete(`/reviews/${id}`);
+                    showToast('Review deleted successfully', 'success');
+                    await loadData();
+                } catch (error) {
+                    console.error("Failed to delete review:", error);
+                    showToast('Failed to delete review', 'error');
+                } finally {
+                    hideLoader();
+                }
+            });
+        }
+    </script>
+</body>
+</html>

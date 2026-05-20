@@ -1,0 +1,890 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Browse Packages | Ethereal Weddings</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        .filter-sidebar {
+            width: 280px;
+            background: #fff;
+            padding: 1.5rem;
+            border-radius: 8px;
+            height: fit-content;
+            position: sticky;
+            top: calc(var(--header-height) + 2rem);
+            border: 1px solid var(--border);
+        }
+
+        .packages-container {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .packages-grid {
+            flex: 1;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .package-card {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .package-header {
+            height: 150px;
+            background: linear-gradient(135deg, #f5f1ea, #e8e0d0);
+            border-radius: 8px 8px 0 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            color: var(--primary);
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="sidebar-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h1 class="brand-font sidebar-logo">Ethereal</h1>
+                <span style="font-size: 0.7rem; color: var(--primary); letter-spacing: 2px;">CUSTOMER PORTAL</span>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="dashboard.html" class="sidebar-item" data-page="dashboard">
+                    <i class="fas fa-th-large"></i> Dashboard
+                </a>
+                <a href="events.html" class="sidebar-item" data-page="events">
+                    <i class="fas fa-calendar-alt"></i> My Events
+                </a>
+                <a href="packages.html" class="sidebar-item active" data-page="packages">
+                    <i class="fas fa-box-open"></i> Browse Packages
+                </a>
+                <a href="bookings.html" class="sidebar-item" data-page="bookings">
+                    <i class="fas fa-clipboard-list"></i> My Bookings
+                </a>
+                <a href="payments.html" class="sidebar-item" data-page="payments">
+                    <i class="fas fa-wallet"></i> My Payments
+                </a>
+                <a href="notifications.html" class="sidebar-item" data-page="notifications">
+                    <i class="fas fa-bell"></i> Notifications
+                </a>
+                <a href="reviews.html" class="sidebar-item" data-page="reviews">
+                    <i class="fas fa-star"></i> Reviews
+                </a>
+            </nav>
+            <div style="padding: 1.5rem; border-top: 1px solid rgba(255,255,255,0.1);">
+                <a href="#" onclick="logout()" class="sidebar-item" style="color: var(--danger);">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </a>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <header class="top-header" style="flex-wrap: wrap; gap: 1rem;">
+                <div style="display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap;">
+                    <button id="backToCats" class="btn btn-outline" style="display: none;" onclick="showCategoryView()">
+                        <i class="fas fa-arrow-left"></i> Back
+                    </button>
+                    <h2 class="brand-font" id="pageTitle" style="white-space: nowrap; margin: 0;">Explore Categories</h2>
+                    
+                    <!-- Guest Capacity Slider (only for Venue category) -->
+                    <div id="capacitySliderContainer" style="display: none; align-items: center; gap: 1rem; background: rgba(255, 255, 255, 0.08); padding: 0.5rem 1.2rem; border-radius: 50px; border: 1px solid rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); transition: all 0.3s ease;">
+                        <span style="font-size: 0.85rem; font-weight: 600; color: var(--text-muted); display: flex; align-items: center; gap: 5px;"><i class="fas fa-users" style="color: var(--primary);"></i> Guests:</span>
+                        <input type="range" id="guestSlider" min="50" max="1000" step="50" value="50" style="accent-color: var(--primary); cursor: pointer; width: 120px;" oninput="updateGuestFilter(this.value)">
+                        <span id="guestCountDisplay" style="font-weight: 700; color: var(--primary); font-size: 0.95rem; min-width: 80px;">50 Guests</span>
+                    </div>
+                </div>
+
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <a id="itineraryBtn" href="#" class="btn btn-primary"
+                        style="display: block; border-radius: 50px; background: var(--secondary); text-decoration: none;"
+                        onclick="handleItineraryClick(event)">
+                        <i class="fas fa-calendar-check"></i> VIEW MY ITINERARY
+                    </a>
+                </div>
+            </header>
+
+            <!-- Category View -->
+            <div id="categoryView" class="packages-grid" style="margin-top: 1rem;">
+                <!-- Category Cards injected here -->
+            </div>
+
+            <!-- Packages View (Hidden by default) -->
+            <div class="packages-container" id="packagesView" style="display: none;">
+                <!-- Grid takes full width now -->
+                <div class="packages-grid" id="packagesGrid" style="width: 100%;">
+                    <!-- Packages injected here -->
+                </div>
+            </div>
+
+            <!-- Package Detail View (Hidden by default) -->
+            <div id="packageDetailView" style="display: none; margin-top: 1rem;">
+                <div class="card" style="padding: 2rem; max-width: 900px; margin: 0 auto;">
+                    <div id="packageDetailContent">
+                        <!-- Content injected here -->
+                    </div>
+
+                    <div id="addPackageContainer"
+                        style="margin-top: 2rem; border-top: 1px solid var(--border); padding-top: 2rem; display: flex; justify-content: center;">
+                        <button type="button" class="btn btn-primary" id="addPackageBtn"
+                            style="padding: 1rem 4rem; font-weight: 700; font-size: 1.1rem; letter-spacing: 1px;">ADD
+                            PACKAGE TO MY EVENT</button>
+                    </div>
+
+                    <!-- Reviews moved after booking -->
+                    <div id="packageReviews"
+                        style="margin-top: 3rem; border-top: 1px solid var(--border); padding-top: 2rem;">
+                        <div
+                            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                            <h4 class="brand-font" style="font-size: 1.3rem;">Customer Reviews</h4>
+                            <div id="detailAvgRating"></div>
+                        </div>
+                        <div id="reviewsList" class="text-center py-2">
+                            <i class="fas fa-circle-notch fa-spin text-primary"></i> Loading reviews...
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal removed since we use full page view now -->
+
+    <script src="../js/api.js"></script>
+    <script src="../js/components.js"></script>
+    <script src="../js/main.js"></script>
+    <script>
+        const user = requireAuth(['CUSTOMER']);
+        const urlParams = new URLSearchParams(window.location.search);
+        const eventId = urlParams.get('eventId');
+
+        let allPackages = [];
+        let categories = [];
+        let selectedPackage = null;
+        let eventDate = null;
+        let bookedPackageIds = [];
+        let activeEventId = eventId;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            init();
+        });
+
+        async function handleItineraryClick(e) {
+            e.preventDefault();
+            
+            if (eventId) {
+                window.location.href = `event-details.html?eventId=${eventId}`;
+                return;
+            }
+
+            const localUser = JSON.parse(localStorage.getItem('ethereal_user'));
+            if (!localUser) {
+                window.location.href = 'events.html';
+                return;
+            }
+
+            try {
+                const customerEvents = await api.get(`/events/customer/${localUser.id}`);
+                const planningEvents = customerEvents.filter(ev => ev.status === 'PLANNING' || ev.status === 'PENDING' || ev.status === 'PENDING_APPROVAL' || ev.status === 'REJECTED');
+
+                if (planningEvents.length === 1) {
+                    window.location.href = `event-details.html?eventId=${planningEvents[0].eventId}`;
+                } else if (planningEvents.length > 1) {
+                    const options = {};
+                    planningEvents.forEach(ev => {
+                        options[ev.eventId] = ev.eventName + ' (' + new Date(ev.eventDate).toLocaleDateString() + ')';
+                    });
+
+                    const { value: selectedEventId } = await Swal.fire({
+                        title: 'Select an Event',
+                        input: 'select',
+                        inputOptions: options,
+                        inputPlaceholder: 'Select an event to view',
+                        showCancelButton: true,
+                        confirmButtonColor: 'var(--primary)',
+                        inputValidator: (value) => {
+                            return new Promise((resolve) => {
+                                if (value) { resolve(); } else { resolve('You need to select an event'); }
+                            });
+                        }
+                    });
+
+                    if (selectedEventId) {
+                        window.location.href = `event-details.html?eventId=${selectedEventId}`;
+                    }
+                } else {
+                    window.location.href = 'events.html';
+                }
+            } catch (err) {
+                console.error("Error fetching events:", err);
+                window.location.href = 'events.html';
+            }
+        }
+
+        let activeCategory = null;
+
+        async function init() {
+            showLoader();
+            try {
+                if (!activeEventId) {
+                    const localUser = JSON.parse(localStorage.getItem('ethereal_user'));
+                    if (localUser) {
+                        try {
+                            const customerEvents = await api.get(`/events/customer/${localUser.id}`);
+                            const planningEvents = customerEvents.filter(e => e.status === 'PLANNING' || e.status === 'PENDING' || e.status === 'PENDING_APPROVAL' || e.status === 'REJECTED');
+                            if (planningEvents.length === 1) {
+                                activeEventId = planningEvents[0].eventId;
+                            }
+                        } catch (e) {
+                            console.error('Failed to auto-resolve event', e);
+                        }
+                    }
+                }
+
+                if (activeEventId) {
+                    try {
+                        const eventData = await api.get(`/events/${activeEventId}`);
+                        eventDate = eventData.eventDate;
+                        if (eventDate) {
+                            bookedPackageIds = await api.get(`/packages/booked?date=${eventDate}`);
+                        }
+                    } catch (e) {
+                        console.error('Failed to fetch event data for availability check', e);
+                    }
+                }
+
+                // Parallel fetch
+                const [pkgData, catData] = await Promise.all([
+                    api.get('/packages/available'),
+                    api.get('/categories')
+                ]);
+
+                allPackages = pkgData;
+                categories = catData;
+
+                renderCategoryCards();
+
+                const searchQuery = urlParams.get('search');
+                if (searchQuery) {
+                    performGlobalSearch(searchQuery);
+                }
+
+            } catch (error) {
+                showToast('Failed to load packages', 'error');
+            } finally {
+                hideLoader();
+            }
+        }
+
+        function renderCategoryCards() {
+            const container = document.getElementById('categoryView');
+            const icons = {
+                'Venue & Space Management': 'fa-hotel',
+                'Catering & Beverage Services': 'fa-utensils',
+                'Decoration & Event Styling': 'fa-palette',
+                'Photography & Cinematography': 'fa-camera',
+                'Entertainment & Music': 'fa-music',
+                'Bridal Wear & Groom Attire': 'fa-tshirt',
+                'Beauty & Hair Services': 'fa-cut',
+                'Stationery & Invitations': 'fa-envelope-open-text',
+                'Wedding Planning & Coordination': 'fa-calendar-heart',
+                'Transport & Wedding Cars': 'fa-car'
+            };
+
+            const descriptions = {
+                'Venue & Space Management': 'Find the perfect setting for your vows, from grand halls to scenic gardens.',
+                'Catering & Beverage Services': 'Exquisite menus and professional service to delight your guests.',
+                'Decoration & Event Styling': 'Transform your vision into reality with bespoke themes and floral art.',
+                'Photography & Cinematography': 'Capture every precious moment with cinematic excellence.',
+                'Entertainment & Music': 'Set the perfect mood with professional DJs, bands, and performers.'
+            };
+
+            function getCategoryImage(categoryId) {
+                const local = localStorage.getItem(`cat_image_${categoryId}`);
+                if (local) return local;
+
+                const defaultImages = {
+                    1: 'https://images.unsplash.com/photo-1519167758481-83f550bb49b3?q=80&w=600&auto=format&fit=crop', // Venue
+                    2: 'https://images.unsplash.com/photo-1523438885200-e635ba2c371e?q=80&w=600&auto=format&fit=crop', // Decor
+                    3: 'https://images.unsplash.com/photo-1555244162-803834f70033?q=80&w=600&auto=format&fit=crop', // Catering
+                    4: 'https://images.unsplash.com/photo-1537633552985-df8429e8048b?q=80&w=600&auto=format&fit=crop', // Photo
+                    5: 'https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?q=80&w=600&auto=format&fit=crop', // Music
+                    6: 'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?q=80&w=600&auto=format&fit=crop', // Religious
+                    7: 'https://images.unsplash.com/photo-1591555268485-a1a17f8b2938?q=80&w=600&auto=format&fit=crop', // Bridal
+                    8: 'https://images.unsplash.com/photo-1469371670807-013ccf25f16a?q=80&w=600&auto=format&fit=crop', // Planning
+                    9: 'https://images.unsplash.com/photo-1511919884226-fd3cad34687c?q=80&w=600&auto=format&fit=crop', // Transport
+                    10: 'https://images.unsplash.com/photo-1531266752426-aad472b7bbf4?q=80&w=600&auto=format&fit=crop', // Special Effects
+                    11: 'https://images.unsplash.com/photo-1607344645866-009c320c5ab8?q=80&w=600&auto=format&fit=crop'  // Invitation
+                };
+                return defaultImages[categoryId] || '../assets/images/placeholder.jpg';
+            }
+
+            window.getPackageImage = function(packageId) {
+                const local = localStorage.getItem(`pkg_image_${packageId}_1`);
+                if (local) return local;
+
+                const defaults = {
+                    1: 'https://images.unsplash.com/photo-1519167758481-83f550bb49b3?q=80&w=600&auto=format&fit=crop', // ballroom
+                    2: 'https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?q=80&w=600&auto=format&fit=crop', // garden
+                    3: 'https://images.unsplash.com/photo-1523438885200-e635ba2c371e?q=80&w=600&auto=format&fit=crop', // floral decor
+                    4: 'https://images.unsplash.com/photo-1519225495810-7512c696505a?q=80&w=600&auto=format&fit=crop', // arch decor
+                    5: 'https://images.unsplash.com/photo-1555244162-803834f70033?q=80&w=600&auto=format&fit=crop', // catering dinner
+                    6: 'https://images.unsplash.com/photo-1544025162-d76694265947?q=80&w=600&auto=format&fit=crop', // catering buffet
+                    7: 'https://images.unsplash.com/photo-1537633552985-df8429e8048b?q=80&w=600&auto=format&fit=crop', // cinema photo
+                    8: 'https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=600&auto=format&fit=crop', // portrait shoot
+                    9: 'https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?q=80&w=600&auto=format&fit=crop', // band
+                    10: 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?q=80&w=600&auto=format&fit=crop', // lighting/dj
+                    11: 'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?q=80&w=600&auto=format&fit=crop', // poruwa
+                    12: 'https://images.unsplash.com/photo-1472653431158-6364773b2a56?q=80&w=600&auto=format&fit=crop', // cathedral
+                    13: 'https://images.unsplash.com/photo-1591555268485-a1a17f8b2938?q=80&w=600&auto=format&fit=crop', // bridal dress
+                    14: 'https://images.unsplash.com/photo-1507679799987-c73779587ccf?q=80&w=600&auto=format&fit=crop', // groom styling
+                    15: 'https://images.unsplash.com/photo-1469371670807-013ccf25f16a?q=80&w=600&auto=format&fit=crop', // planning full
+                    16: 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?q=80&w=600&auto=format&fit=crop', // planning month
+                    17: 'https://images.unsplash.com/photo-1511919884226-fd3cad34687c?q=80&w=600&auto=format&fit=crop', // rolls royce
+                    18: 'https://images.unsplash.com/photo-1503376780353-7e6692767b70?q=80&w=600&auto=format&fit=crop', // classic car
+                    19: 'https://images.unsplash.com/photo-1531266752426-aad472b7bbf4?q=80&w=600&auto=format&fit=crop', // sparkler pyro
+                    20: 'https://images.unsplash.com/photo-1518241353330-0f7941c2d9b5?q=80&w=600&auto=format&fit=crop', // low fog clouds
+                    21: 'https://images.unsplash.com/photo-1607344645866-009c320c5ab8?q=80&w=600&auto=format&fit=crop', // letterpress
+                    22: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=600&auto=format&fit=crop'  // digital
+                };
+                return defaults[packageId] || 'https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=600&auto=format&fit=crop';
+            }
+
+            container.innerHTML = categories.map(c => {
+                const finalImg = getCategoryImage(c.categoryId);
+
+                return `
+                <div class="card" style="cursor: pointer; padding: 0; overflow: hidden; transition: transform 0.3s;" onclick="selectCategory('${c.categoryName}', ${c.categoryId})" onmouseover="this.style.transform='translateY(-5px)'" onmouseout="this.style.transform='translateY(0)'">
+                    <div class="package-header" style="height: 150px; background: url('${finalImg}') no-repeat center center; background-size: cover; position: relative;">
+                        <div style="position: absolute; top: 10px; right: 10px; background: rgba(255,255,255,0.85); width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(4px);">
+                            <i class="fas ${icons[c.categoryName] || 'fa-gem'}" style="color: var(--primary); font-size: 0.9rem; margin: 0;"></i>
+                        </div>
+                    </div>
+                    <div class="card-body" style="padding: 1.5rem; text-align: center;">
+                        <h3 class="brand-font mb-1" style="font-size: 1.2rem;">${c.categoryName}</h3>
+                        <p class="text-muted" style="font-size: 0.85rem; margin-bottom: 1.5rem; min-height: 3rem;">
+                            ${descriptions[c.categoryName] || 'Explore our exclusive selection of premium services for your special day.'}
+                        </p>
+                        <button class="btn btn-primary w-100">Browse Services</button>
+                    </div>
+                </div>
+            `}).join('');
+        }
+
+        let activeCategoryId = null;
+
+        window.updateGuestFilter = function(val) {
+            document.getElementById('guestCountDisplay').innerText = val + ' Guests';
+            renderPackages();
+        };
+
+        function selectCategory(catName, catId) {
+            activeCategory = catName;
+            activeCategoryId = catId;
+            document.getElementById('categoryView').style.display = 'none';
+            document.getElementById('packagesView').style.display = 'flex';
+            document.getElementById('backToCats').style.display = 'block';
+            document.getElementById('pageTitle').innerText = catName;
+
+            const slider = document.getElementById('capacitySliderContainer');
+            if (catId === 1) {
+                slider.style.display = 'flex';
+            } else {
+                slider.style.display = 'none';
+            }
+
+            renderPackages();
+        }
+
+        function showCategoryView() {
+            activeCategory = null;
+            activeCategoryId = null;
+            document.getElementById('categoryView').style.display = 'grid';
+            document.getElementById('packagesView').style.display = 'none';
+            document.getElementById('packageDetailView').style.display = 'none';
+            document.getElementById('backToCats').style.display = 'none';
+            document.getElementById('pageTitle').innerText = 'Explore Categories';
+            
+            document.getElementById('capacitySliderContainer').style.display = 'none';
+        }
+
+        function performGlobalSearch(query) {
+            query = query.toLowerCase();
+            document.getElementById('categoryView').style.display = 'none';
+            document.getElementById('packagesView').style.display = 'flex';
+            document.getElementById('packageDetailView').style.display = 'none';
+            document.getElementById('backToCats').style.display = 'block';
+            document.getElementById('pageTitle').innerText = 'Search Results: ' + query;
+            document.getElementById('backToCats').onclick = showCategoryView;
+
+            document.getElementById('capacitySliderContainer').style.display = 'none';
+
+            activeCategory = null;
+            activeCategoryId = null;
+
+            const grid = document.getElementById('packagesGrid');
+            const filtered = allPackages.filter(p => {
+                return (p.title && p.title.toLowerCase().includes(query)) ||
+                       (p.vendorName && p.vendorName.toLowerCase().includes(query)) ||
+                       (p.categoryName && p.categoryName.toLowerCase().includes(query)) ||
+                       (p.description && p.description.toLowerCase().includes(query));
+            });
+
+            if (filtered.length === 0) {
+                grid.innerHTML = '<div class="card text-center" style="grid-column: 1/-1;"><p class="text-muted">No packages found matching your search.</p></div>';
+                return;
+            }
+
+            grid.innerHTML = filtered.map(p => {
+                const category = categories.find(c => c.categoryId === p.categoryId);
+                const categoryName = category ? category.categoryName : 'General';
+                const ratingHtml = p.averageRating
+                    ? `<div style="display: flex; flex-direction: column; align-items: center; gap: 0.2rem;">
+                         ${starRating(Math.round(p.averageRating))} 
+                         <span style="font-size: 0.75rem; color: var(--text-muted);">${p.averageRating.toFixed(1)} / 5.0</span>
+                       </div>`
+                    : '<span style="font-size: 0.75rem; color: var(--text-muted); font-style: italic;">Not rated yet</span>';
+
+                let availabilityHtml = '';
+                if (eventDate) {
+                    if (bookedPackageIds.includes(p.packageId)) {
+                        availabilityHtml = `<div style="position: absolute; bottom: -12px; background: #fff; padding: 2px 10px; border-radius: 20px; font-size: 0.75rem; color: #ff4d4d; font-weight: bold; display: flex; align-items: center; gap: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); border: 1px solid #ffe6e6;">
+                            <span style="height: 8px; width: 8px; background-color: #ff4d4d; border-radius: 50%; display: inline-block;"></span> Unavailable
+                        </div>`;
+                    } else {
+                        availabilityHtml = `<div style="position: absolute; bottom: -12px; background: #fff; padding: 2px 10px; border-radius: 20px; font-size: 0.75rem; color: #4CAF50; font-weight: bold; display: flex; align-items: center; gap: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); border: 1px solid #e6ffe6;">
+                            <span style="height: 8px; width: 8px; background-color: #4CAF50; border-radius: 50%; display: inline-block;"></span> Available
+                        </div>`;
+                    }
+                }
+
+                const finalImg = window.getPackageImage(p.packageId);
+
+                return `
+                <div class="card package-card" style="cursor: pointer; padding: 0; overflow: hidden; transition: all 0.3s;" onclick="showPackageDetails(${JSON.stringify(p).replace(/"/g, '&quot;')})">
+                    <div class="package-header" style="height: 180px; background: url('${finalImg}') no-repeat center center; background-size: cover; position: relative;">
+                        <div style="position: absolute; top: 10px; right: 10px; background: rgba(255,255,255,0.85); width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(4px);">
+                            <i class="fas fa-gem" style="color: var(--primary); font-size: 0.9rem; margin: 0;"></i>
+                        </div>
+                        <div style="display: flex; justify-content: center; width: 100%; position: absolute; bottom: 0;">
+                            ${availabilityHtml}
+                        </div>
+                    </div>
+                    <div style="padding: 1.5rem; flex: 1; display: flex; flex-direction: column; align-items: center; text-align: center; margin-top: 10px;">
+                        <span class="badge badge-confirmed" style="font-size: 0.7rem; margin-bottom: 0.5rem;">${categoryName}</span>
+                        <h3 class="brand-font mb-1" style="font-size: 1.2rem; min-height: 3rem; display: flex; align-items: center;">${p.title}</h3>
+                        
+                        <div style="margin-top: 1rem; width: 100%; border-top: 1px solid var(--border); padding-top: 1rem;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                                <span style="font-weight: 700; color: var(--primary); font-size: 1.1rem;">${formatLKR(p.price)}</span>
+                                <span style="font-size: 0.8rem; color: var(--text-muted);"><i class="fas fa-clock"></i> ${p.duration}</span>
+                            </div>
+                            <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1rem;">Vendor: ${p.vendorName}</div>
+                            
+                            <div style="display: flex; justify-content: center; width: 100%;">
+                                ${ratingHtml}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `}).join('');
+        }
+
+        function renderPackages() {
+            const grid = document.getElementById('packagesGrid');
+            let filtered = allPackages.filter(p => {
+                return p.categoryName === activeCategory || p.categoryId === activeCategoryId;
+            });
+
+            // Apply guest capacity filter if active category is Venue & Space Management
+            if (activeCategoryId === 1) {
+                const minGuests = parseInt(document.getElementById('guestSlider').value);
+                filtered = filtered.filter(p => {
+                    const cap = extractCapacity(p.description);
+                    // If capacity is not specified or satisfies the condition, show it
+                    return cap === null || cap >= minGuests;
+                });
+            }
+
+
+
+            if (filtered.length === 0) {
+                grid.innerHTML = '<div class="card text-center" style="grid-column: 1/-1;"><p class="text-muted">No packages available in this category yet.</p></div>';
+                return;
+            }
+
+            grid.innerHTML = filtered.map(p => {
+                const category = categories.find(c => c.categoryId === p.categoryId);
+                const categoryName = category ? category.categoryName : 'General';
+                const ratingHtml = p.averageRating
+                    ? `<div style="display: flex; flex-direction: column; align-items: center; gap: 0.2rem;">
+                         ${starRating(Math.round(p.averageRating))} 
+                         <span style="font-size: 0.75rem; color: var(--text-muted);">${p.averageRating.toFixed(1)} / 5.0</span>
+                       </div>`
+                    : '<span style="font-size: 0.75rem; color: var(--text-muted); font-style: italic;">Not rated yet</span>';
+
+                let availabilityHtml = '';
+                if (eventDate) {
+                    if (bookedPackageIds.includes(p.packageId)) {
+                        availabilityHtml = `<div style="position: absolute; bottom: -12px; background: #fff; padding: 2px 10px; border-radius: 20px; font-size: 0.75rem; color: #ff4d4d; font-weight: bold; display: flex; align-items: center; gap: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); border: 1px solid #ffe6e6;">
+                            <span style="height: 8px; width: 8px; background-color: #ff4d4d; border-radius: 50%; display: inline-block;"></span> Unavailable
+                        </div>`;
+                    } else {
+                        availabilityHtml = `<div style="position: absolute; bottom: -12px; background: #fff; padding: 2px 10px; border-radius: 20px; font-size: 0.75rem; color: #4CAF50; font-weight: bold; display: flex; align-items: center; gap: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); border: 1px solid #e6ffe6;">
+                            <span style="height: 8px; width: 8px; background-color: #4CAF50; border-radius: 50%; display: inline-block;"></span> Available
+                        </div>`;
+                    }
+                }
+
+                const finalImg = window.getPackageImage(p.packageId);
+
+                return `
+                <div class="card package-card" style="cursor: pointer; padding: 0; overflow: hidden; transition: all 0.3s;" onclick="showPackageDetails(${JSON.stringify(p).replace(/"/g, '&quot;')})">
+                    <div class="package-header" style="height: 180px; background: url('${finalImg}') no-repeat center center; background-size: cover; position: relative;">
+                        <div style="position: absolute; top: 10px; right: 10px; background: rgba(255,255,255,0.85); width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(4px);">
+                            <i class="fas fa-gem" style="color: var(--primary); font-size: 0.9rem; margin: 0;"></i>
+                        </div>
+                        <div style="display: flex; justify-content: center; width: 100%; position: absolute; bottom: 0;">
+                            ${availabilityHtml}
+                        </div>
+                    </div>
+                    <div style="padding: 1.5rem; flex: 1; display: flex; flex-direction: column; align-items: center; text-align: center; margin-top: 10px;">
+                        <span class="badge badge-confirmed" style="font-size: 0.7rem; margin-bottom: 0.5rem;">${categoryName}</span>
+                        <h3 class="brand-font mb-1" style="font-size: 1.2rem; min-height: 3rem; display: flex; align-items: center;">${p.title}</h3>
+                        
+                        <div style="margin-top: 1rem; width: 100%; border-top: 1px solid var(--border); padding-top: 1rem;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                                <span style="font-weight: 700; color: var(--primary); font-size: 1.1rem;">${formatLKR(p.price)}</span>
+                                <span style="font-size: 0.8rem; color: var(--text-muted);"><i class="fas fa-clock"></i> ${p.duration}</span>
+                            </div>
+                            <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1rem;">Vendor: ${p.vendorName}</div>
+                            
+                            <!-- Bottom Center Rating -->
+                            <div style="display: flex; justify-content: center; width: 100%;">
+                                ${ratingHtml}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `}).join('');
+        }
+
+        function showPackageListView() {
+            document.getElementById('categoryView').style.display = 'none';
+            document.getElementById('packagesView').style.display = 'flex';
+            document.getElementById('packageDetailView').style.display = 'none';
+            document.getElementById('backToCats').style.display = 'block';
+            document.getElementById('pageTitle').innerText = activeCategory;
+            document.getElementById('backToCats').onclick = showCategoryView;
+
+            if (activeCategoryId === 1) {
+                document.getElementById('capacitySliderContainer').style.display = 'flex';
+            } else {
+                document.getElementById('capacitySliderContainer').style.display = 'none';
+            }
+        }
+
+
+
+        function extractDuration(durationStr) {
+            if (!durationStr) return 0;
+            // For venues, duration stores capacity as int
+            const val = parseInt(durationStr);
+            if (!isNaN(val)) return val;
+            
+            const match = durationStr.match(/(\d+)/);
+            return match ? parseInt(match[1]) : 0;
+        }
+
+        function extractCapacity(desc) {
+            if (!desc) return null;
+            const regex = /(\d+)\s*(?:Pax|Capacity|Guests|people|persons)/i;
+            const match = desc.match(regex);
+            return match ? parseInt(match[1]) : null;
+        }
+
+        async function showPackageDetails(pkg) {
+            selectedPackage = pkg;
+            document.getElementById('categoryView').style.display = 'none';
+            document.getElementById('packagesView').style.display = 'none';
+            document.getElementById('packageDetailView').style.display = 'block';
+            document.getElementById('backToCats').style.display = 'block';
+            document.getElementById('backToCats').onclick = showPackageListView;
+            document.getElementById('pageTitle').innerText = "Package Details";
+            document.getElementById('capacitySliderContainer').style.display = 'none';
+
+            const info = document.getElementById('packageDetailContent');
+            const avgRating = pkg.averageRating ? pkg.averageRating.toFixed(1) : "0.0";
+
+            // Show details and loading state for reviews
+            info.innerHTML = `
+                <div style="margin-bottom: 2rem;">
+                    <div style="font-weight: 700; font-size: 2.2rem; margin-bottom: 0.5rem;" class="brand-font">${pkg.title}</div>
+                    
+                    <div style="margin-bottom: 1.5rem;">
+                        <div style="display: flex; gap: 1rem; align-items: center;">
+                            <span style="color: var(--primary); font-weight: 700; font-size: 1.8rem;">${formatLKR(pkg.price)}</span>
+                            <span class="badge badge-confirmed" style="padding: 0.4rem 0.8rem;">${pkg.duration}</span>
+                            ${eventDate && bookedPackageIds.includes(pkg.packageId) ? `<span class="badge badge-cancelled" style="padding: 0.4rem 0.8rem; background: #ffe6e6; color: #ff4d4d; border: 1px solid #ff4d4d;"><span style="height: 8px; width: 8px; background-color: #ff4d4d; border-radius: 50%; display: inline-block; margin-right: 5px;"></span> Unavailable</span>` : ''}
+                            ${eventDate && !bookedPackageIds.includes(pkg.packageId) ? `<span class="badge badge-confirmed" style="padding: 0.4rem 0.8rem; background: #e6ffe6; color: #4CAF50; border: 1px solid #4CAF50;"><span style="height: 8px; width: 8px; background-color: #4CAF50; border-radius: 50%; display: inline-block; margin-right: 5px;"></span> Available</span>` : ''}
+                        </div>
+                        
+                        <div style="margin-top: 0.5rem;">
+                            <div style="font-size: 0.9rem; color: var(--text-muted); font-weight: 500;">
+                                Service provided by <span style="color: var(--text); font-weight: 700;">${pkg.vendorName}</span>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 0.8rem; margin-top: 0.3rem;">
+                                <div style="display: flex; align-items: center; gap: 0.3rem;">
+                                    ${starRating(Math.round(pkg.averageRating || 0))}
+                                    <span style="font-weight: 700; font-size: 1rem; color: var(--text);">${avgRating}</span>
+                                </div>
+                                <span style="color: var(--text-muted); font-size: 0.85rem;">|</span>
+                                <span style="color: var(--text-muted); font-size: 0.85rem; font-weight: 500;">
+                                    ${pkg.ratingCount} ${pkg.ratingCount === 1 ? 'Review' : 'Reviews'}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <h4 class="brand-font mb-1" style="font-size: 1.4rem; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; margin-bottom: 1rem;">Service Overview</h4>
+                    <p class="text-muted" style="font-size: 1.1rem; line-height: 1.8; color: #444; white-space: pre-line;">
+                        ${pkg.description}
+                    </p>
+                </div>
+            `;
+
+            // Update average rating in the review header too
+            document.getElementById('detailAvgRating').innerHTML = pkg.averageRating
+                ? `<div style="display: flex; align-items: center; gap: 0.5rem;">
+                     ${starRating(Math.round(pkg.averageRating))}
+                     <span style="font-weight: 600;">${pkg.averageRating.toFixed(1)} Rating</span>
+                   </div>`
+                : '';
+
+            // Fetch reviews
+            try {
+                const reviews = await api.get(`/reviews/package/${pkg.packageId}`);
+                const list = document.getElementById('reviewsList');
+
+                if (reviews.length === 0) {
+                    list.innerHTML = '<p class="text-muted" style="font-size: 0.9rem; font-style: italic; background: var(--bg-light); padding: 2rem; border-radius: 8px;">No reviews yet for this package.</p>';
+                } else {
+                    list.style.textAlign = 'left';
+                    list.innerHTML = reviews.map(r => `
+                        <div style="background: #fff; padding: 1.2rem; border-radius: 10px; margin-bottom: 1rem; border: 1px solid var(--border); box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                                <span style="font-weight: 600; font-size: 0.95rem;">${r.customerName}</span>
+                                <span>${starRating(r.packageRating)}</span>
+                            </div>
+                            <p style="font-size: 0.9rem; color: var(--text-muted); margin: 0; line-height: 1.5;">"${r.packageComment}"</p>
+                        </div>
+                    `).join('');
+                }
+            } catch (e) {
+                document.getElementById('reviewsList').innerHTML = '<p class="text-danger">Failed to load reviews.</p>';
+            }
+        }
+
+        document.getElementById('addPackageBtn').onclick = async () => {
+            const localUser = JSON.parse(localStorage.getItem('ethereal_user'));
+            if (!localUser) {
+                Swal.fire('Error', 'Please login to add packages', 'error');
+                return;
+            }
+
+            if (eventDate && bookedPackageIds.includes(selectedPackage.packageId)) {
+                Swal.fire('Unavailable', 'This package has already been booked by another customer on your event date. Please choose a different package.', 'error');
+                return;
+            }
+
+            let targetEventId = eventId;
+            const btn = document.getElementById('addPackageBtn');
+
+            if (targetEventId) {
+                try {
+                    btn.disabled = true;
+                    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Verifying event status...';
+                    const targetEvent = await api.get(`/events/${targetEventId}`);
+                    
+                    let hasRejected = false;
+                    let rejectedPackageNames = [];
+                    if (targetEvent.status !== 'PLANNING') {
+                        try {
+                            const bPkgs = await api.get(`/bookings/customer/${localUser.id}`);
+                            const booking = bPkgs.find(b => b.eventId === parseInt(targetEventId));
+                            if (booking) {
+                                const pkgs = await api.get(`/bookings/${booking.bookingId}/packages`);
+                                hasRejected = pkgs.some(p => p.vendorStatus === 'REJECTED');
+                                rejectedPackageNames = pkgs.filter(p => p.vendorStatus === 'REJECTED').map(p => p.packageTitle);
+                            }
+                        } catch (e) {
+                            console.error('Error fetching booking statuses', e);
+                        }
+                    }
+
+                    if (targetEvent.status === 'CONFIRMED' || targetEvent.status === 'PAID') {
+                        btn.disabled = false;
+                        btn.innerText = 'ADD PACKAGE TO MY EVENT';
+                        Swal.fire('Action Not Allowed', 'This event has already been confirmed or paid for. You cannot add more packages.', 'error');
+                        return;
+                    }
+
+                    if (rejectedPackageNames.includes(selectedPackage.title)) {
+                        btn.disabled = false;
+                        btn.innerText = 'ADD PACKAGE TO MY EVENT';
+                        Swal.fire('Rejected Package', 'This package was previously rejected by the vendor for this event. Please select a different package.', 'error');
+                        return;
+                    }
+                } catch (err) {
+                    console.error("Failed to verify event status:", err);
+                } finally {
+                    btn.disabled = false;
+                    btn.innerText = 'ADD PACKAGE TO MY EVENT';
+                }
+            }
+
+            if (!targetEventId) {
+                try {
+                    btn.disabled = true;
+                    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Checking events...';
+
+                    const customerEvents = await api.get(`/events/customer/${localUser.id}`);
+                    const planningEvents = customerEvents.filter(e => e.status === 'PLANNING' || e.status === 'PENDING' || e.status === 'PENDING_APPROVAL' || e.status === 'REJECTED');
+
+                    if (planningEvents.length === 0) {
+                        btn.disabled = false;
+                        btn.innerText = 'ADD PACKAGE TO MY EVENT';
+                        Swal.fire({
+                            title: 'No Active Events',
+                            text: 'You do not have any events in PLANNING or PENDING status. Please create an event first from the "My Events" page.',
+                            icon: 'warning',
+                            showCancelButton: true,
+                            confirmButtonText: 'Plan Event',
+                            cancelButtonText: 'OK',
+                            confirmButtonColor: 'var(--primary)'
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                window.location.href = 'events.html';
+                            }
+                        });
+                        return;
+                    } else if (planningEvents.length === 1) {
+                        targetEventId = planningEvents[0].eventId;
+                    } else {
+                        btn.disabled = false;
+                        btn.innerText = 'ADD PACKAGE TO MY EVENT';
+                        const options = {};
+                        planningEvents.forEach(e => {
+                            options[e.eventId] = e.eventName + ' (' + new Date(e.eventDate).toLocaleDateString() + ') [' + e.status + ']';
+                        });
+
+                        const { value: selectedEventId } = await Swal.fire({
+                            title: 'Select an Event',
+                            input: 'select',
+                            inputOptions: options,
+                            inputPlaceholder: 'Select an event',
+                            showCancelButton: true,
+                            confirmButtonColor: 'var(--primary)',
+                            inputValidator: (value) => {
+                                return new Promise((resolve) => {
+                                    if (value) {
+                                        resolve();
+                                    } else {
+                                        resolve('You need to select an event');
+                                    }
+                                });
+                            }
+                        });
+
+                        if (selectedEventId) {
+                            targetEventId = selectedEventId;
+                        } else {
+                            return; // User cancelled
+                        }
+                    }
+                } catch (err) {
+                    console.error("Error fetching events:", err);
+                    Swal.fire('Error', 'Failed to load your events.', 'error');
+                    btn.disabled = false;
+                    btn.innerText = 'ADD PACKAGE TO MY EVENT';
+                    return;
+                }
+            }
+
+            const payload = {
+                eventId: parseInt(targetEventId),
+                packageId: selectedPackage.packageId,
+                quantity: 1,
+                notes: "Added from package browser"
+            };
+
+            try {
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Checking...';
+
+                // Prevent multiple venues (excluding rejected/unavailable venues)
+                if (selectedPackage.categoryId === 1 || (selectedPackage.categoryName && selectedPackage.categoryName.includes('Venue'))) {
+                    const existingPackages = await api.get(`/event-packages/event/${targetEventId}`);
+                    
+                    let bookingPackages = [];
+                    try {
+                        const bookings = await api.get(`/bookings/customer/${localUser.id}`);
+                        const booking = bookings.find(b => b.eventId === parseInt(targetEventId));
+                        if (booking) {
+                            bookingPackages = await api.get(`/bookings/${booking.bookingId}/packages`);
+                        }
+                    } catch (e) {
+                        console.error('Error fetching bookings for venue check', e);
+                    }
+
+                    const hasActiveVenue = existingPackages.some(ep => {
+                        if (!ep.categoryName || !ep.categoryName.includes('Venue')) return false;
+                        const bPkg = bookingPackages.find(bp => bp.eventPackageId === ep.eventPackageId);
+                        if (bPkg) {
+                            const status = bPkg.vendorStatus ? bPkg.vendorStatus.toUpperCase() : '';
+                            return status !== 'REJECTED' && status !== 'UNAVAILABLE';
+                        }
+                        return true;
+                    });
+
+                    if (hasActiveVenue) {
+                        Swal.fire('Warning', 'You have already added an active Venue to this event. You can only select one venue per event.', 'warning');
+                        btn.disabled = false;
+                        btn.innerText = 'ADD PACKAGE TO MY EVENT';
+                        return;
+                    }
+                }
+
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Adding...';
+                await api.post('/event-packages', payload);
+
+                Swal.fire({
+                    title: 'Added!',
+                    text: 'Package successfully added to your event.',
+                    icon: 'success',
+                    confirmButtonColor: 'var(--primary)'
+                });
+
+            } catch (err) {
+                console.error(err);
+                Swal.fire('Error', 'Failed to add package to event.', 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerText = 'ADD PACKAGE TO MY EVENT';
+            }
+        };
+
+    </script>
+</body>
+
+</html>
