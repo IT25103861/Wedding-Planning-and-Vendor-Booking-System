@@ -13,9 +13,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-// OOP: Encapsulation
-// OOP: Dependency Injection
-// Relationship: CustomerRepository depends on DBConnection
 @Repository
 public class CustomerRepository {
 
@@ -30,7 +27,7 @@ public class CustomerRepository {
         String sql = "INSERT INTO customer (title, name, username, customer_role, other_party_name, email, phone, password) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
         try (Connection conn = dbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS)) {
-            
+
             ps.setString(1, customerDTO.getTitle());
             ps.setString(2, customerDTO.getName());
             ps.setString(3, customerDTO.getUsername());
@@ -41,7 +38,7 @@ public class CustomerRepository {
             ps.setString(8, customerDTO.getPassword());
 
             ps.executeUpdate();
-            
+
             try (ResultSet rs = ps.getGeneratedKeys()) {
                 if (rs.next()) {
                     customerDTO.setId(rs.getInt(1));
@@ -127,59 +124,21 @@ public class CustomerRepository {
         try (Connection conn = dbConnection.getConnection()) {
             conn.setAutoCommit(false);
             try {
-                // 1. Delete reviews
-                String sql1 = "DELETE FROM review WHERE customer_id = ?";
-                try (PreparedStatement ps = conn.prepareStatement(sql1)) {
+                // 1. Update event statuses to 'DELETED'
+                String updateEventsSql = "UPDATE event SET status = 'DELETED' WHERE customer_id = ?";
+                try (PreparedStatement ps = conn.prepareStatement(updateEventsSql)) {
                     ps.setInt(1, id);
                     ps.executeUpdate();
                 }
 
-                // 2. Handle bookings (need to delete payments and booking_package first)
-                String fetchBookings = "SELECT booking_id FROM booking WHERE customer_id = ?";
-                List<Integer> bookingIds = new ArrayList<>();
-                try (PreparedStatement ps = conn.prepareStatement(fetchBookings)) {
-                    ps.setInt(1, id);
-                    try (ResultSet rs = ps.executeQuery()) {
-                        while (rs.next()) bookingIds.add(rs.getInt(1));
-                    }
-                }
-
-                for (Integer bId : bookingIds) {
-                    // Delete payments
-                    String delPayments = "DELETE FROM payment WHERE booking_id = ?";
-                    try (PreparedStatement ps = conn.prepareStatement(delPayments)) {
-                        ps.setInt(1, bId);
-                        ps.executeUpdate();
-                    }
-                    // Delete booking packages
-                    String delPackages = "DELETE FROM booking_package WHERE booking_id = ?";
-                    try (PreparedStatement ps = conn.prepareStatement(delPackages)) {
-                        ps.setInt(1, bId);
-                        ps.executeUpdate();
-                    }
-                    // Delete finance records
-                    String delFinance = "DELETE FROM company_finance WHERE booking_id = ?";
-                    try (PreparedStatement ps = conn.prepareStatement(delFinance)) {
-                        ps.setInt(1, bId);
-                        ps.executeUpdate();
-                    }
-                }
-
-                // 3. Delete bookings
-                String delBookings = "DELETE FROM booking WHERE customer_id = ?";
-                try (PreparedStatement ps = conn.prepareStatement(delBookings)) {
+                // 2. Update booking statuses to 'DELETED'
+                String updateBookingsSql = "UPDATE booking SET status = 'DELETED' WHERE customer_id = ?";
+                try (PreparedStatement ps = conn.prepareStatement(updateBookingsSql)) {
                     ps.setInt(1, id);
                     ps.executeUpdate();
                 }
 
-                // 4. Delete events
-                String delEvents = "DELETE FROM event WHERE customer_id = ?";
-                try (PreparedStatement ps = conn.prepareStatement(delEvents)) {
-                    ps.setInt(1, id);
-                    ps.executeUpdate();
-                }
-
-                // 5. Finally delete customer
+                // 3. Finally delete customer
                 String sqlFinal = "DELETE FROM customer WHERE customer_id = ?";
                 try (PreparedStatement ps = conn.prepareStatement(sqlFinal)) {
                     ps.setInt(1, id);
@@ -189,7 +148,7 @@ public class CustomerRepository {
                 conn.commit();
             } catch (SQLException e) {
                 conn.rollback();
-                throw new RuntimeException("Error during cascade delete of customer", e);
+                throw new RuntimeException("Error during soft delete of customer records", e);
             }
         } catch (SQLException e) {
             throw new RuntimeException("Database connection error", e);

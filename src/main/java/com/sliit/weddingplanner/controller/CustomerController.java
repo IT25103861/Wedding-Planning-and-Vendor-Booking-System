@@ -9,10 +9,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-// OOP: Encapsulation
-// OOP: Dependency Injection
-// Relationship: CustomerController depends on CustomerService
-//Pamithi 1
 @RestController
 @RequestMapping("/api/customers")
 public class CustomerController {

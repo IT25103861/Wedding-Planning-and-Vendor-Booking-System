@@ -10,15 +10,11 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
-// OOP: Encapsulation
-// OOP: Inheritance (Implements CustomerService)
-// OOP: Polymorphism
-// Relationship: CustomerServiceImpl implements CustomerService
 @Service
 public class CustomerServiceImpl implements CustomerService {
 
     private final CustomerRepository customerRepository;
-    
+
     @Autowired
     public CustomerServiceImpl(CustomerRepository customerRepository) {
         this.customerRepository = customerRepository;

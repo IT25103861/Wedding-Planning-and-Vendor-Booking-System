@@ -1,12 +1,5 @@
 package com.sliit.weddingplanner.dto;
 
-
-// OOP: Inheritance
-// OOP: Encapsulation
-// OOP: Polymorphism
-// Relationship: Customer inherits User
-// Relationship: Customer associates with Event
-// Relationship: Customer associates with Booking
 public class CustomerDTO extends UserDTO {
 
     private String title;
