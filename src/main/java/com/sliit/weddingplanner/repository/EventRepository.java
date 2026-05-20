@@ -9,10 +9,8 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.sql.Types;
 
-// OOP: Encapsulation
-// OOP: Dependency Injection
-// Relationship: EventRepository depends on DBConnection
 @Repository
 public class EventRepository {
 
@@ -27,7 +25,7 @@ public class EventRepository {
         String sql = "INSERT INTO event (customer_id, event_name, event_type, event_date, location, description, status, event_rating, event_review) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
         try (Connection conn = dbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-            
+
             ps.setInt(1, eventDTO.getCustomerId());
             ps.setString(2, eventDTO.getEventName());
             ps.setString(3, eventDTO.getEventType() != null ? eventDTO.getEventType() : "Wedding");
@@ -124,13 +122,13 @@ public class EventRepository {
         List<EventDTO> list = new ArrayList<>();
         // Query to find events that passed, have no rating, and associated payment is PAID
         String sql = "SELECT e.* FROM event e " +
-                     "JOIN booking b ON e.event_id = b.event_id " +
-                     "JOIN payment p ON b.booking_id = p.booking_id " +
-                     "WHERE e.customer_id = ? " +
-                     "AND e.event_date < CURDATE() " +
-                     "AND (e.event_rating IS NULL OR e.event_rating = 0) " +
-                     "AND p.status = 'PAID' " +
-                     "AND e.status != 'DELETED'";
+                "JOIN booking b ON e.event_id = b.event_id " +
+                "JOIN payment p ON b.booking_id = p.booking_id " +
+                "WHERE e.customer_id = ? " +
+                "AND e.event_date < CURDATE() " +
+                "AND (e.event_rating IS NULL OR e.event_rating = 0) " +
+                "AND p.status = 'PAID' " +
+                "AND e.status != 'DELETED'";
         try (Connection conn = dbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, customerId);

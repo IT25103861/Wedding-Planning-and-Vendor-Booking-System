@@ -9,9 +9,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-// OOP: Encapsulation
-// OOP: Dependency Injection
-// Relationship: EventController depends on EventService
 @RestController
 @RequestMapping("/api/events")
 public class EventController {
@@ -61,8 +58,8 @@ public class EventController {
 
     @PostMapping("/{eventId}/review")
     public ResponseEntity<Void> submitReview(
-            @PathVariable int eventId, 
-            @RequestParam int rating, 
+            @PathVariable int eventId,
+            @RequestParam int rating,
             @RequestParam String review) {
         eventService.submitEventReview(eventId, rating, review);
         return ResponseEntity.ok().build();

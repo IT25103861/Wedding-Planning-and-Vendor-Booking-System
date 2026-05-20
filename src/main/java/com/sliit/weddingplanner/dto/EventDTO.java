@@ -4,11 +4,6 @@ package com.sliit.weddingplanner.dto;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-// OOP: Encapsulation
-// OOP: Abstraction
-// OOP: Association
-// Relationship: Event belongs to Customer
-// Relationship: Event associates with Booking
 public class EventDTO {
 
     private Integer eventId;

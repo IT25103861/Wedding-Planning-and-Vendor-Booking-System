@@ -40,10 +40,10 @@ public class EventPackageRepository {
     public List<EventPackageDTO> findAllByEventId(int eventId) {
         List<EventPackageDTO> list = new ArrayList<>();
         String sql = "SELECT ep.*, p.title as package_title, p.price as package_price, c.category_name " +
-                     "FROM event_package ep " +
-                     "JOIN package p ON ep.package_id = p.package_id " +
-                     "JOIN category c ON p.category_id = c.category_id " +
-                     "WHERE ep.event_id = ?";
+                "FROM event_package ep " +
+                "JOIN package p ON ep.package_id = p.package_id " +
+                "JOIN category c ON p.category_id = c.category_id " +
+                "WHERE ep.event_id = ?";
         try (Connection conn = dbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, eventId);
