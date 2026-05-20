@@ -20,14 +20,14 @@ public class EventPackageController {
         this.eventPackageService = eventPackageService;
     }
 
-    @PostMapping
-    public ResponseEntity<EventPackageDTO> addPackageToEvent(@RequestBody EventPackageDTO dto) {
-        return new ResponseEntity<>(eventPackageService.addPackageToEvent(dto), HttpStatus.CREATED);
-    }
-
     @GetMapping("/event/{eventId}")
     public ResponseEntity<List<EventPackageDTO>> getPackagesByEvent(@PathVariable int eventId) {
         return ResponseEntity.ok(eventPackageService.getPackagesByEvent(eventId));
+    }
+
+    @PostMapping
+    public ResponseEntity<EventPackageDTO> addPackageToEvent(@RequestBody EventPackageDTO dto) {
+        return new ResponseEntity<>(eventPackageService.addPackageToEvent(dto), HttpStatus.CREATED);
     }
 
     @DeleteMapping("/{id}")

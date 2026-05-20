@@ -64,37 +64,32 @@ public class EventServiceImpl implements EventService {
     @Override
     @org.springframework.transaction.annotation.Transactional
     public void delete(int id) {
-        getById(id); // Check existence
+        getById(id);
 
-        // 1. Soft delete the event
         eventRepository.delete(id);
         System.out.println("DEBUG: Event #" + id + " status set to DELETED");
 
-        // 2. Find any bookings associated with this event
         List<com.sliit.weddingplanner.dto.BookingDTO> bookings = bookingRepository.findAll();
         for (com.sliit.weddingplanner.dto.BookingDTO booking : bookings) {
             if (booking.getEventId() == id) {
                 int bookingId = booking.getBookingId();
                 System.out.println("DEBUG: Found Booking #" + bookingId + " for Event #" + id);
 
-                // Update booking status to DELETED
+
                 bookingRepository.updateStatus(bookingId, "DELETED");
                 System.out.println("DEBUG: Booking #" + bookingId + " status updated to DELETED");
 
-                // Update booking packages status to REJECTED to release the packages (relevent package convert to REJECTED)
                 List<com.sliit.weddingplanner.dto.BookingPackageDTO> bpList = bookingPackageRepository.findAllByBookingId(bookingId);
                 for (com.sliit.weddingplanner.dto.BookingPackageDTO bp : bpList) {
                     bookingPackageRepository.updateVendorStatus(bp.getBookingPackageId(), "REJECTED", "Event cancelled/deleted");
                     System.out.println("DEBUG: Booking Package #" + bp.getBookingPackageId() + " status updated to REJECTED");
                 }
 
-                // 3. Find payment associated with this booking
                 paymentRepository.findByBookingId(bookingId).ifPresent(payment -> {
-                    // Change payment status to REFUNDED
+
                     paymentRepository.updateStatus(payment.getPaymentId(), "REFUNDED");
                     System.out.println("DEBUG: Payment #" + payment.getPaymentId() + " status updated to REFUNDED");
 
-                    // 4. Update/insert in company_finance table
                     com.sliit.weddingplanner.dto.CompanyFinanceDTO finance = new com.sliit.weddingplanner.dto.CompanyFinanceDTO();
                     finance.setType("EXPENSE");
                     finance.setBookingId(bookingId);

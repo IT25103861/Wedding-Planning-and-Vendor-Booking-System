@@ -37,6 +37,17 @@ public class EventPackageRepository {
         }
     }
 
+    public void delete(int id) {
+        String sql = "DELETE FROM event_package WHERE event_package_id = ?";
+        try (Connection conn = dbConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, id);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException("Error deleting event package", e);
+        }
+    }
+
     public List<EventPackageDTO> findAllByEventId(int eventId) {
         List<EventPackageDTO> list = new ArrayList<>();
         String sql = "SELECT ep.*, p.title as package_title, p.price as package_price, c.category_name " +
@@ -58,16 +69,7 @@ public class EventPackageRepository {
         return list;
     }
 
-    public void delete(int id) {
-        String sql = "DELETE FROM event_package WHERE event_package_id = ?";
-        try (Connection conn = dbConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, id);
-            ps.executeUpdate();
-        } catch (SQLException e) {
-            throw new RuntimeException("Error deleting event package", e);
-        }
-    }
+
 
     private EventPackageDTO mapRow(ResultSet rs) throws SQLException {
         EventPackageDTO dto = new EventPackageDTO();

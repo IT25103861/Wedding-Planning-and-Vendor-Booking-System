@@ -19,13 +19,13 @@ public class EventPackageServiceImpl implements EventPackageService {
     }
 
     @Override
-    public EventPackageDTO addPackageToEvent(EventPackageDTO dto) {
-        return eventPackageRepository.save(dto);
+    public List<EventPackageDTO> getPackagesByEvent(int eventId) {
+        return eventPackageRepository.findAllByEventId(eventId);
     }
 
     @Override
-    public List<EventPackageDTO> getPackagesByEvent(int eventId) {
-        return eventPackageRepository.findAllByEventId(eventId);
+    public EventPackageDTO addPackageToEvent(EventPackageDTO dto) {
+        return eventPackageRepository.save(dto);
     }
 
     @Override

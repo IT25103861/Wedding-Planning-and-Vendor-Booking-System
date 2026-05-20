@@ -66,6 +66,30 @@ public class EventRepository {
         return Optional.empty();
     }
 
+    public EventDTO update(EventDTO eventDTO) {
+        String sql = "UPDATE event SET event_name=?, event_type=?, event_date=?, location=?, description=?, status=?, event_rating=?, event_review=? WHERE event_id=?";
+        try (Connection conn = dbConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, eventDTO.getEventName());
+            ps.setString(2, eventDTO.getEventType());
+            ps.setDate(3, eventDTO.getEventDate() != null ? Date.valueOf(eventDTO.getEventDate()) : null);
+            ps.setString(4, eventDTO.getLocation());
+            ps.setString(5, eventDTO.getDescription());
+            ps.setString(6, eventDTO.getStatus());
+            if (eventDTO.getEventRating() != null && eventDTO.getEventRating() != 0) {
+                ps.setInt(7, eventDTO.getEventRating());
+            } else {
+                ps.setNull(7, Types.INTEGER);
+            }
+            ps.setString(8, eventDTO.getEventReview());
+            ps.setInt(9, eventDTO.getEventId());
+            ps.executeUpdate();
+            return eventDTO;
+        } catch (SQLException e) {
+            throw new RuntimeException("Error updating event", e);
+        }
+    }
+
     public List<EventDTO> findAll() {
         List<EventDTO> list = new ArrayList<>();
         String sql = "SELECT * FROM event";
@@ -94,33 +118,10 @@ public class EventRepository {
         return list;
     }
 
-    public EventDTO update(EventDTO eventDTO) {
-        String sql = "UPDATE event SET event_name=?, event_type=?, event_date=?, location=?, description=?, status=?, event_rating=?, event_review=? WHERE event_id=?";
-        try (Connection conn = dbConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, eventDTO.getEventName());
-            ps.setString(2, eventDTO.getEventType());
-            ps.setDate(3, eventDTO.getEventDate() != null ? Date.valueOf(eventDTO.getEventDate()) : null);
-            ps.setString(4, eventDTO.getLocation());
-            ps.setString(5, eventDTO.getDescription());
-            ps.setString(6, eventDTO.getStatus());
-            if (eventDTO.getEventRating() != null && eventDTO.getEventRating() != 0) {
-                ps.setInt(7, eventDTO.getEventRating());
-            } else {
-                ps.setNull(7, Types.INTEGER);
-            }
-            ps.setString(8, eventDTO.getEventReview());
-            ps.setInt(9, eventDTO.getEventId());
-            ps.executeUpdate();
-            return eventDTO;
-        } catch (SQLException e) {
-            throw new RuntimeException("Error updating event", e);
-        }
-    }
+
 
     public List<EventDTO> findPendingReviewsByCustomerId(int customerId) {
         List<EventDTO> list = new ArrayList<>();
-        // Query to find events that passed, have no rating, and associated payment is PAID
         String sql = "SELECT e.* FROM event e " +
                 "JOIN booking b ON e.event_id = b.event_id " +
                 "JOIN payment p ON b.booking_id = p.booking_id " +
