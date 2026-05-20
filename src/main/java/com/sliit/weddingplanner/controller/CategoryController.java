@@ -9,8 +9,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-// OOP: Encapsulation
-// OOP: Dependency Injection
 @RestController
 @RequestMapping("/api/categories")
 public class CategoryController {

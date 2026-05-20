@@ -10,9 +10,6 @@ import java.math.BigDecimal;
 import java.sql.*;
 import java.util.*;
 
-// OOP: Encapsulation
-// OOP: Dependency Injection
-// Relationship: VendorRepository depends on DBConnection
 @Repository
 public class VendorRepository {
 
@@ -144,14 +141,51 @@ public class VendorRepository {
         }
     }
 
-    public void delete(int id) {
-        String sql = "DELETE FROM vendor WHERE vendor_id = ?";
+    public boolean hasActiveBookings(int vendorId) {
+        String sql = "SELECT COUNT(*) FROM booking_package bp " +
+                "JOIN event_package ep ON bp.event_package_id = ep.event_package_id " +
+                "JOIN package p ON ep.package_id = p.package_id " +
+                "JOIN booking b ON bp.booking_id = b.booking_id " +
+                "WHERE p.vendor_id = ? AND b.status NOT IN ('CANCELLED', 'DELETED')";
         try (Connection conn = dbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, id);
-            ps.executeUpdate();
+            ps.setInt(1, vendorId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1) > 0;
+                }
+            }
         } catch (SQLException e) {
-            throw new RuntimeException("Error deleting vendor", e);
+            throw new RuntimeException("Error checking active bookings for vendor", e);
+        }
+        return false;
+    }
+
+    public void delete(int id) {
+        try (Connection conn = dbConnection.getConnection()) {
+            conn.setAutoCommit(false);
+            try {
+                // 1. Soft delete vendor
+                String sqlVendor = "UPDATE vendor SET status = 'DELETED', availability = 'UNAVAILABLE' WHERE vendor_id = ?";
+                try (PreparedStatement ps = conn.prepareStatement(sqlVendor)) {
+                    ps.setInt(1, id);
+                    ps.executeUpdate();
+                }
+
+                // 2. Soft delete all packages belonging to the vendor
+                String sqlPackages = "UPDATE package SET availability = 'DELETED' WHERE vendor_id = ?";
+                try (PreparedStatement ps = conn.prepareStatement(sqlPackages)) {
+                    ps.setInt(1, id);
+                    ps.executeUpdate();
+                }
+
+                conn.commit();
+            } catch (SQLException e) {
+                conn.rollback();
+                throw new RuntimeException("Error soft deleting vendor and packages", e);
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Database connection error", e);
         }
     }
 
@@ -184,7 +218,7 @@ public class VendorRepository {
         dto.setAvailability(rs.getString("availability"));
         dto.setStatus(rs.getString("status"));
         dto.setApprovedBy(rs.getObject("approved_by") != null ? rs.getInt("approved_by") : null);
-        dto.setApprovedAt(rs.getTimestamp("approved_at") != null ? Timestamp.valueOf(rs.getTimestamp("approved_at").toLocalDateTime()).toLocalDateTime() : null);
+        dto.setApprovedAt(rs.getTimestamp("approved_at") != null ? rs.getTimestamp("approved_at").toLocalDateTime() : null);
         dto.setCreatedAt(rs.getTimestamp("created_at") != null ? rs.getTimestamp("created_at").toLocalDateTime() : null);
         return dto;
     }

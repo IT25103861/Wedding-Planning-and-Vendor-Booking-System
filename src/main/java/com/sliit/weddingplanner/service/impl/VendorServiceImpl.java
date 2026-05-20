@@ -3,6 +3,7 @@ package com.sliit.weddingplanner.service.impl;
 import com.sliit.weddingplanner.dto.vendor.VendorDTO;
 import com.sliit.weddingplanner.exception.DuplicateRecordException;
 import com.sliit.weddingplanner.exception.ResourceNotFoundException;
+import com.sliit.weddingplanner.exception.ValidationException;
 import com.sliit.weddingplanner.repository.PackageRepository;
 import com.sliit.weddingplanner.repository.VendorRepository;
 import com.sliit.weddingplanner.service.VendorService;
@@ -68,6 +69,9 @@ public class VendorServiceImpl implements VendorService {
     @Override
     public void deleteUser(int id) {
         getUserById(id); // Throws exception if not found
+        if (vendorRepository.hasActiveBookings(id)) {
+            throw new ValidationException("Vendor cannot be deleted because one or more packages are currently booked by customers.");
+        }
         vendorRepository.delete(id);
     }
 

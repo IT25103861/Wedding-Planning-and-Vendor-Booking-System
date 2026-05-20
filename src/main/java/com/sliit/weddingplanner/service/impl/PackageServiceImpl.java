@@ -9,13 +9,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
-// OOP: Encapsulation
-// OOP: Inheritance (Implements PackageService)
-// OOP: Polymorphism
-// Relationship: PackageServiceImpl implements PackageService
 @Service
 public class PackageServiceImpl implements PackageService {
-
     private final PackageRepository packageRepository;
 
     @Autowired
@@ -73,5 +68,10 @@ public class PackageServiceImpl implements PackageService {
         PackageDTO existing = getById(id);
         existing.setAvailability(status);
         packageRepository.update(existing);
+    }
+
+    @Override
+    public List<Integer> getBookedPackageIdsByDate(String date) {
+        return packageRepository.findBookedPackageIdsByDate(date);
     }
 }

@@ -9,10 +9,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
-// OOP: Encapsulation
-// OOP: Inheritance (Implements CategoryService)
-// OOP: Polymorphism
-// Relationship: CategoryServiceImpl implements CategoryService
 @Service
 public class CategoryServiceImpl implements CategoryService {
 

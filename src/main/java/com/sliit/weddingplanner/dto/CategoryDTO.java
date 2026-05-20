@@ -3,7 +3,6 @@ package com.sliit.weddingplanner.dto;
 
 import java.time.LocalDateTime;
 
-// OOP: Encapsulation
 public class CategoryDTO {
 
     private Integer categoryId;

@@ -4,11 +4,6 @@ package com.sliit.weddingplanner.dto;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-// OOP: Encapsulation
-// OOP: Composition
-// OOP: Association
-// Relationship: Package belongs to Vendor
-// Relationship: Booking depends on Package
 public class PackageDTO {
 
     private Integer packageId;

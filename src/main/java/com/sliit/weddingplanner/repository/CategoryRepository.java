@@ -10,8 +10,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-// OOP: Encapsulation
-// OOP: Dependency Injection
 @Repository
 public class CategoryRepository {
 
@@ -26,7 +24,7 @@ public class CategoryRepository {
         String sql = "INSERT INTO category (category_name, description) VALUES (?, ?)";
         try (Connection conn = dbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-            
+
             ps.setString(1, categoryDTO.getCategoryName());
             ps.setString(2, categoryDTO.getDescription());
 

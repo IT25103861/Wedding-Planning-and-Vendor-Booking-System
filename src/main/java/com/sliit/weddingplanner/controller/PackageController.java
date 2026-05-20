@@ -9,9 +9,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-// OOP: Encapsulation
-// OOP: Dependency Injection
-// Relationship: PackageController depends on PackageService
 @RestController
 @RequestMapping("/api/packages")
 public class PackageController {
@@ -58,5 +55,10 @@ public class PackageController {
     public ResponseEntity<Void> updateAvailability(@PathVariable int id, @RequestParam String status) {
         packageService.updateAvailability(id, status);
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/booked")
+    public ResponseEntity<List<Integer>> getBookedPackageIdsByDate(@RequestParam String date) {
+        return ResponseEntity.ok(packageService.getBookedPackageIdsByDate(date));
     }
 }

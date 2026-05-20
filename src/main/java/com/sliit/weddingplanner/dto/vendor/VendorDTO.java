@@ -1,8 +1,6 @@
 package com.sliit.weddingplanner.dto.vendor;
 
 import com.sliit.weddingplanner.dto.UserDTO;
-
-import java.sql.Timestamp;
 import java.time.LocalDateTime;
 
 public class VendorDTO extends UserDTO {

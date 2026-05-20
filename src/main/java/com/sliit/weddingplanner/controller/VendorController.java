@@ -9,9 +9,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-// OOP: Encapsulation
-// OOP: Dependency Injection
-// Relationship: VendorController depends on VendorService
 @RestController
 @RequestMapping("/api/vendors")
 public class VendorController {
