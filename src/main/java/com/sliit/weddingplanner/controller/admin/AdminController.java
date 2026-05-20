@@ -26,6 +26,11 @@ public class AdminController {
         return new ResponseEntity<>(created, HttpStatus.CREATED);
     }
 
+    @PutMapping("/{id}")
+    public ResponseEntity<AdminDTO> updateAdmin(@PathVariable int id, @RequestBody AdminDTO adminDTO) {
+        return ResponseEntity.ok(adminService.updateUser(id, adminDTO));
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<AdminDTO> getAdminById(@PathVariable int id) {
         return ResponseEntity.ok(adminService.getUserById(id));
@@ -36,10 +41,7 @@ public class AdminController {
         return ResponseEntity.ok(adminService.getAllUsers());
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<AdminDTO> updateAdmin(@PathVariable int id, @RequestBody AdminDTO adminDTO) {
-        return ResponseEntity.ok(adminService.updateUser(id, adminDTO));
-    }
+
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteAdmin(@PathVariable int id) {

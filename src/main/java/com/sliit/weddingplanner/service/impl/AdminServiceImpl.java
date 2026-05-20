@@ -30,6 +30,17 @@ public class AdminServiceImpl implements AdminService {
     }
 
     @Override
+    public AdminDTO updateUser(int id, AdminDTO adminDetails) {
+        AdminDTO admin = getUserById(id);
+
+        admin.setName(adminDetails.getName());
+        admin.setUsername(adminDetails.getUsername());
+        admin.setEmail(adminDetails.getEmail());
+
+        return adminRepository.update(admin);
+    }
+
+    @Override
     public AdminDTO getUserById(int id) {
         return adminRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Admin not found with id " + id));
@@ -40,16 +51,7 @@ public class AdminServiceImpl implements AdminService {
         return adminRepository.findAll();
     }
 
-    @Override
-    public AdminDTO updateUser(int id, AdminDTO adminDetails) {
-        AdminDTO admin = getUserById(id);
 
-        admin.setName(adminDetails.getName());
-        admin.setUsername(adminDetails.getUsername());
-        admin.setEmail(adminDetails.getEmail());
-
-        return adminRepository.update(admin);
-    }
 
     @Override
     public void deleteUser(int id) {

@@ -29,15 +29,12 @@ public class AuthServiceImpl implements AuthService {
         String username = loginRequest.getUsername();
         String password = loginRequest.getPassword();
 
-        // Check Admin
         UserDTO user = checkUser("admin", "admin_id", username, password, "ROLE_ADMIN");
         if (user != null) return createResponse(user);
 
-        // Check Customer
         user = checkUser("customer", "customer_id", username, password, "ROLE_CUSTOMER");
         if (user != null) return createResponse(user);
 
-        // Check Vendor
         user = checkUser("vendor", "vendor_id", username, password, "ROLE_VENDOR");
         if (user != null) return createResponse(user);
 
@@ -93,7 +90,6 @@ public class AuthServiceImpl implements AuthService {
     }
 
     private LoginResponseDTO createResponse(UserDTO user) {
-        // Return a dummy token since security is removed but frontend expects one
         return new LoginResponseDTO("dummy-token-no-security", user.getRole(), user);
     }
 }

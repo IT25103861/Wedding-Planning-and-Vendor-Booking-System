@@ -47,6 +47,24 @@ public class AdminRepository {
         }
     }
 
+    public AdminDTO update(AdminDTO adminDTO) {
+        String sql = "UPDATE admin SET name=?, username=?, email=?, role=? WHERE admin_id=?";
+        try (Connection conn = dbConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1, adminDTO.getName());
+            ps.setString(2, adminDTO.getUsername());
+            ps.setString(3, adminDTO.getEmail());
+            ps.setString(4, adminDTO.getRole());
+            ps.setInt(5, adminDTO.getId());
+
+            ps.executeUpdate();
+            return adminDTO;
+        } catch (SQLException e) {
+            throw new RuntimeException("Error updating admin", e);
+        }
+    }
+
     public void delete(int id) {
         String sql = "DELETE FROM admin WHERE admin_id = ?";
         try (Connection conn = dbConnection.getConnection();
@@ -91,23 +109,7 @@ public class AdminRepository {
         return list;
     }
 
-    public AdminDTO update(AdminDTO adminDTO) {
-        String sql = "UPDATE admin SET name=?, username=?, email=?, role=? WHERE admin_id=?";
-        try (Connection conn = dbConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
 
-            ps.setString(1, adminDTO.getName());
-            ps.setString(2, adminDTO.getUsername());
-            ps.setString(3, adminDTO.getEmail());
-            ps.setString(4, adminDTO.getRole());
-            ps.setInt(5, adminDTO.getId());
-
-            ps.executeUpdate();
-            return adminDTO;
-        } catch (SQLException e) {
-            throw new RuntimeException("Error updating admin", e);
-        }
-    }
 
     public boolean existsByUsernameOrEmail(String username, String email) {
         String sql = "SELECT 1 FROM admin WHERE username=? OR email=?";
