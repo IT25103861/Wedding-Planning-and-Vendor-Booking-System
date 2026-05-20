@@ -42,10 +42,10 @@ public class BookingPackageRepository {
     public List<BookingPackageDTO> findAllByBookingId(int bookingId) {
         List<BookingPackageDTO> list = new ArrayList<>();
         String sql = "SELECT bp.*, p.title as package_title, v.name as vendor_name FROM booking_package bp " +
-                     "JOIN event_package ep ON bp.event_package_id = ep.event_package_id " +
-                     "JOIN package p ON ep.package_id = p.package_id " +
-                     "JOIN vendor v ON p.vendor_id = v.vendor_id " +
-                     "WHERE bp.booking_id = ?";
+                "JOIN event_package ep ON bp.event_package_id = ep.event_package_id " +
+                "JOIN package p ON ep.package_id = p.package_id " +
+                "JOIN vendor v ON p.vendor_id = v.vendor_id " +
+                "WHERE bp.booking_id = ?";
         try (Connection conn = dbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, bookingId);
@@ -58,6 +58,24 @@ public class BookingPackageRepository {
             throw new RuntimeException("Error finding packages by booking", e);
         }
         return list;
+    }
+
+    public BookingPackageDTO findById(int bookingPackageId) {
+        String sql = "SELECT bp.*, p.title as package_title, v.name as vendor_name FROM booking_package bp " +
+                "JOIN event_package ep ON bp.event_package_id = ep.event_package_id " +
+                "JOIN package p ON ep.package_id = p.package_id " +
+                "JOIN vendor v ON p.vendor_id = v.vendor_id " +
+                "WHERE bp.booking_package_id = ?";
+        try (Connection conn = dbConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, bookingPackageId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) return mapRow(rs);
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Error finding package by ID", e);
+        }
+        return null;
     }
 
     public int getBookingIdByPackageId(int packageId) {
@@ -101,13 +119,13 @@ public class BookingPackageRepository {
     public List<BookingPackageDTO> findAllByVendorId(int vendorId) {
         List<BookingPackageDTO> list = new ArrayList<>();
         String sql = "SELECT bp.*, p.title as package_title, b.location, b.booking_date as event_date, c.name as customer_name, e.status as event_status " +
-                     "FROM booking_package bp " +
-                     "JOIN event_package ep ON bp.event_package_id = ep.event_package_id " +
-                     "JOIN package p ON ep.package_id = p.package_id " +
-                     "JOIN booking b ON bp.booking_id = b.booking_id " +
-                     "JOIN customer c ON b.customer_id = c.customer_id " +
-                     "JOIN event e ON b.event_id = e.event_id " +
-                     "WHERE p.vendor_id = ? AND e.status != 'DELETED'";
+                "FROM booking_package bp " +
+                "JOIN event_package ep ON bp.event_package_id = ep.event_package_id " +
+                "JOIN package p ON ep.package_id = p.package_id " +
+                "JOIN booking b ON bp.booking_id = b.booking_id " +
+                "JOIN customer c ON b.customer_id = c.customer_id " +
+                "JOIN event e ON b.event_id = e.event_id " +
+                "WHERE p.vendor_id = ? AND e.status != 'DELETED'";
         try (Connection conn = dbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, vendorId);

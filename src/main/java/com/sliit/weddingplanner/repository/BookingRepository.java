@@ -10,9 +10,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-// OOP: Encapsulation
-// OOP: Dependency Injection
-// Relationship: BookingRepository depends on DBConnection
 @Repository
 public class BookingRepository {
 
@@ -27,7 +24,7 @@ public class BookingRepository {
         String sql = "INSERT INTO booking (event_id, customer_id, booking_date, location, status, total_cost, payment_type) VALUES (?, ?, ?, ?, ?, ?, ?)";
         try (Connection conn = dbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-            
+
             if (bookingDTO.getEventId() != null) ps.setInt(1, bookingDTO.getEventId()); else ps.setNull(1, Types.INTEGER);
             ps.setInt(2, bookingDTO.getCustomerId());
             ps.setDate(3, Date.valueOf(bookingDTO.getBookingDate()));
@@ -78,9 +75,9 @@ public class BookingRepository {
     public List<BookingDTO> findAll() {
         List<BookingDTO> list = new ArrayList<>();
         String sql = "SELECT b.*, c.name as customer_name, e.event_name, e.status as event_status " +
-                     "FROM booking b " +
-                     "LEFT JOIN customer c ON b.customer_id = c.customer_id " +
-                     "LEFT JOIN event e ON b.event_id = e.event_id";
+                "FROM booking b " +
+                "LEFT JOIN customer c ON b.customer_id = c.customer_id " +
+                "LEFT JOIN event e ON b.event_id = e.event_id";
         try (Connection conn = dbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
@@ -94,10 +91,10 @@ public class BookingRepository {
     public List<BookingDTO> findAllByCustomerId(int customerId) {
         List<BookingDTO> list = new ArrayList<>();
         String sql = "SELECT b.*, e.event_name, e.status as event_status, p.status as payment_status " +
-                     "FROM booking b " +
-                     "JOIN event e ON b.event_id = e.event_id " +
-                     "LEFT JOIN payment p ON b.booking_id = p.booking_id " +
-                     "WHERE b.customer_id = ? AND e.status != 'DELETED'";
+                "FROM booking b " +
+                "JOIN event e ON b.event_id = e.event_id " +
+                "LEFT JOIN payment p ON b.booking_id = p.booking_id " +
+                "WHERE b.customer_id = ? AND e.status != 'DELETED'";
         try (Connection conn = dbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, customerId);

@@ -4,8 +4,6 @@ import com.sliit.weddingplanner.dto.BookingDTO;
 
 import java.util.List;
 
-// OOP: Interface-based Design
-// OOP: Abstraction
 public interface BookingService {
     BookingDTO create(BookingDTO dto);
     BookingDTO getById(int id);
@@ -19,4 +17,5 @@ public interface BookingService {
     List<com.sliit.weddingplanner.dto.BookingPackageDTO> getBookingPackages(int bookingId);
     List<com.sliit.weddingplanner.dto.BookingPackageDTO> getVendorBookings(int vendorId);
     void updateBookingPackageStatus(int id, String status, String reason);
+    void customerConfirmBooking(int bookingId, String location);
 }

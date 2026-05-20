@@ -10,9 +10,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-// OOP: Encapsulation
-// OOP: Dependency Injection
-// Relationship: BookingController depends on BookingService
 @RestController
 @RequestMapping("/api/bookings")
 public class BookingController {
@@ -52,10 +49,18 @@ public class BookingController {
 
     @PostMapping("/confirm-event/{eventId}")
     public ResponseEntity<BookingDTO> confirmEvent(
-            @PathVariable int eventId, 
+            @PathVariable int eventId,
             @RequestParam String location,
             @RequestParam(defaultValue = "FULL") String paymentType) {
         return ResponseEntity.ok(bookingService.confirmEvent(eventId, location, paymentType));
+    }
+
+    @PostMapping("/{bookingId}/customer-confirm")
+    public ResponseEntity<Void> customerConfirmBooking(
+            @PathVariable int bookingId,
+            @RequestParam String location) {
+        bookingService.customerConfirmBooking(bookingId, location);
+        return ResponseEntity.ok().build();
     }
 
     @GetMapping("/{bookingId}/packages")

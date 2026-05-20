@@ -5,11 +5,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
-// OOP: Encapsulation
-// OOP: Composition
-// OOP: Dependency Injection
-// Relationship: Booking composes Payment
-// Relationship: Booking depends on Event, Customer, Vendor, and Package
 public class BookingDTO {
 
     private Integer bookingId;
