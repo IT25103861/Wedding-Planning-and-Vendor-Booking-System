@@ -10,10 +10,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
-// OOP: Encapsulation
-// OOP: Inheritance (Implements AdminService)
-// OOP: Polymorphism
-// Relationship: AdminServiceImpl implements AdminService
 @Service
 public class AdminServiceImpl implements AdminService {
 
@@ -29,7 +25,6 @@ public class AdminServiceImpl implements AdminService {
         if (adminRepository.existsByUsernameOrEmail(adminDTO.getUsername(), adminDTO.getEmail())) {
             throw new DuplicateRecordException("Username or email already exists");
         }
-        // Password encoding removed
         adminDTO.setRole("ROLE_ADMIN");
         return adminRepository.save(adminDTO);
     }
@@ -48,12 +43,11 @@ public class AdminServiceImpl implements AdminService {
     @Override
     public AdminDTO updateUser(int id, AdminDTO adminDetails) {
         AdminDTO admin = getUserById(id);
-        
-        // Update fields except password and id
+
         admin.setName(adminDetails.getName());
         admin.setUsername(adminDetails.getUsername());
         admin.setEmail(adminDetails.getEmail());
-        
+
         return adminRepository.update(admin);
     }
 
@@ -65,10 +59,6 @@ public class AdminServiceImpl implements AdminService {
 
     @Override
     public void approveVendor(int vendorId, int adminId) {
-        // Implementation typically calls vendor service, 
-        // but for tight coupling rules we could inject VendorRepository or do nothing here if vendorService handles it.
-        // Actually, we should just let VendorService handle it. 
-        // We will throw UnsupportedOperationException if we don't have access to VendorRepository here.
         throw new UnsupportedOperationException("Call VendorService to approve vendor");
     }
 

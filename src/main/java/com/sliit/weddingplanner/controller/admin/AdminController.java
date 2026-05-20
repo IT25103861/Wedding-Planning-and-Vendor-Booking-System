@@ -9,9 +9,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-// OOP: Encapsulation
-// OOP: Dependency Injection
-// Relationship: AdminController depends on AdminService
 @RestController
 @RequestMapping("/api/admins")
 public class AdminController {

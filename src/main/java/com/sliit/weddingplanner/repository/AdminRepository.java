@@ -13,9 +13,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-// OOP: Encapsulation
-// OOP: Dependency Injection
-// Relationship: AdminRepository depends on DBConnection
 @Repository
 public class AdminRepository {
 
@@ -30,7 +27,7 @@ public class AdminRepository {
         String sql = "INSERT INTO admin (name, username, email, password, role) VALUES (?, ?, ?, ?, ?)";
         try (Connection conn = dbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS)) {
-            
+
             ps.setString(1, adminDTO.getName());
             ps.setString(2, adminDTO.getUsername());
             ps.setString(3, adminDTO.getEmail());
@@ -38,7 +35,7 @@ public class AdminRepository {
             ps.setString(5, adminDTO.getRole());
 
             ps.executeUpdate();
-            
+
             try (ResultSet rs = ps.getGeneratedKeys()) {
                 if (rs.next()) {
                     adminDTO.setId(rs.getInt(1));
@@ -65,7 +62,7 @@ public class AdminRepository {
         String sql = "SELECT * FROM admin WHERE admin_id = ?";
         try (Connection conn = dbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-            
+
             ps.setInt(1, id);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
@@ -84,7 +81,7 @@ public class AdminRepository {
         try (Connection conn = dbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
-            
+
             while (rs.next()) {
                 list.add(mapRowToAdmin(rs));
             }
@@ -98,7 +95,7 @@ public class AdminRepository {
         String sql = "UPDATE admin SET name=?, username=?, email=?, role=? WHERE admin_id=?";
         try (Connection conn = dbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-             
+
             ps.setString(1, adminDTO.getName());
             ps.setString(2, adminDTO.getUsername());
             ps.setString(3, adminDTO.getEmail());
@@ -116,7 +113,7 @@ public class AdminRepository {
         String sql = "SELECT 1 FROM admin WHERE username=? OR email=?";
         try (Connection conn = dbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-             
+
             ps.setString(1, username);
             ps.setString(2, email);
 

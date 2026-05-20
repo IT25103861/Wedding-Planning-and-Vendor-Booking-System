@@ -3,9 +3,6 @@ package com.sliit.weddingplanner.dto;
 
 import java.time.LocalDateTime;
 
-// OOP: Abstraction
-// OOP: Encapsulation
-// OOP: Inheritance (Parent Class)
 public class UserDTO {
 
     protected Integer id;
