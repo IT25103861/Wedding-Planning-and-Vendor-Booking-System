@@ -4,10 +4,6 @@ package com.sliit.weddingplanner.dto;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-// OOP: Encapsulation
-// OOP: Aggregation
-// OOP: Interface-based Design
-// Relationship: CompanyFinance tracks Payment and Vendor payouts
 public class CompanyFinanceDTO {
 
     private int financeId;

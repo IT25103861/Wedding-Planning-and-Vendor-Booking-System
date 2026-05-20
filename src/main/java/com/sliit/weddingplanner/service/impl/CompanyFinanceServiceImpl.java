@@ -9,10 +9,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
-// OOP: Encapsulation
-// OOP: Inheritance (Implements CompanyFinanceService)
-// OOP: Polymorphism
-// Relationship: CompanyFinanceServiceImpl implements CompanyFinanceService
 @Service
 public class CompanyFinanceServiceImpl implements CompanyFinanceService {
 

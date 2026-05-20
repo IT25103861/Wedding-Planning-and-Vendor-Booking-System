@@ -4,7 +4,6 @@ package com.sliit.weddingplanner.dto;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-// OOP: Encapsulation
 public class PaymentDTO {
 
     private Integer paymentId;

@@ -10,9 +10,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-// OOP: Encapsulation
-// OOP: Dependency Injection
-// Relationship: CompanyFinanceRepository depends on DBConnection
 @Repository
 public class CompanyFinanceRepository {
 
@@ -27,7 +24,7 @@ public class CompanyFinanceRepository {
         String sql = "INSERT INTO company_finance (type, booking_id, payment_id, amount, description, payment_method) VALUES (?, ?, ?, ?, ?, ?)";
         try (Connection conn = dbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-            
+
             ps.setString(1, financeDTO.getType());
             if (financeDTO.getBookingId() != null) ps.setInt(2, financeDTO.getBookingId()); else ps.setNull(2, Types.INTEGER);
             if (financeDTO.getPaymentId() != null) ps.setInt(3, financeDTO.getPaymentId()); else ps.setNull(3, Types.INTEGER);

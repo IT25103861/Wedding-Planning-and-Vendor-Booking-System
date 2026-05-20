@@ -4,8 +4,6 @@ import com.sliit.weddingplanner.dto.PaymentDTO;
 
 import java.util.List;
 
-// OOP: Interface-based Design
-// OOP: Abstraction
 public interface PaymentService {
     PaymentDTO create(PaymentDTO dto);
     PaymentDTO getById(int id);

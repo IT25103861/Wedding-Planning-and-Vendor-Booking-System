@@ -10,9 +10,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-// OOP: Encapsulation
-// OOP: Dependency Injection
-// Relationship: PaymentRepository depends on DBConnection
 @Repository
 public class PaymentRepository {
 
@@ -27,7 +24,7 @@ public class PaymentRepository {
         String sql = "INSERT INTO payment (booking_id, total_amount, amount, due_amount, payment_type, status) VALUES (?, ?, ?, ?, ?, ?)";
         try (Connection conn = dbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-            
+
             ps.setInt(1, paymentDTO.getBookingId());
             ps.setBigDecimal(2, paymentDTO.getTotalAmount());
             ps.setBigDecimal(3, paymentDTO.getAmount());
@@ -96,9 +93,9 @@ public class PaymentRepository {
     public List<PaymentDTO> findAllByCustomerId(int customerId) {
         List<PaymentDTO> list = new ArrayList<>();
         String sql = "SELECT p.*, e.event_name FROM payment p " +
-                     "JOIN booking b ON p.booking_id = b.booking_id " +
-                     "JOIN event e ON b.event_id = e.event_id " +
-                     "WHERE b.customer_id = ?";
+                "JOIN booking b ON p.booking_id = b.booking_id " +
+                "JOIN event e ON b.event_id = e.event_id " +
+                "WHERE b.customer_id = ?";
         try (Connection conn = dbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, customerId);

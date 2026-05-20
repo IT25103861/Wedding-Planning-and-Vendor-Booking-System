@@ -9,9 +9,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-// OOP: Encapsulation
-// OOP: Dependency Injection
-// Relationship: CompanyFinanceController depends on CompanyFinanceService
 @RestController
 @RequestMapping("/api/finance")
 public class CompanyFinanceController {

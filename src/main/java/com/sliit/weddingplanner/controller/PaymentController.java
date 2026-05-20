@@ -7,9 +7,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-// OOP: Encapsulation
-// OOP: Dependency Injection
-// Relationship: PaymentController depends on PaymentService
 @RestController
 @RequestMapping("/api/payments")
 public class PaymentController {
@@ -48,7 +45,7 @@ public class PaymentController {
 
     @PutMapping("/{id}/status")
     public ResponseEntity<Void> updatePaymentStatus(
-            @PathVariable int id, 
+            @PathVariable int id,
             @RequestParam String status,
             @RequestParam(required = false) String paymentType) {
         paymentService.updatePaymentStatus(id, status, paymentType);
