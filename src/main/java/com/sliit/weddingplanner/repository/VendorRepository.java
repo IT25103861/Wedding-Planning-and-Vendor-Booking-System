@@ -190,17 +190,28 @@ public class VendorRepository {
     }
 
     public VendorDTO update(VendorDTO vendorDTO) {
-        String sql = "UPDATE vendor SET name=?, username=?, email=?, phone=?, availability=?, status=?, password=? WHERE vendor_id=?";
+        StringBuilder sql = new StringBuilder("UPDATE vendor SET name=?, username=?, email=?, phone=?, availability=?, status=?");
+        boolean updatePassword = vendorDTO.getPassword() != null && !vendorDTO.getPassword().isEmpty();
+        if (updatePassword) {
+            sql.append(", password=?");
+        }
+        sql.append(" WHERE vendor_id=?");
+        
         try (Connection conn = dbConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+             PreparedStatement ps = conn.prepareStatement(sql.toString())) {
             ps.setString(1, vendorDTO.getName());
             ps.setString(2, vendorDTO.getUsername());
             ps.setString(3, vendorDTO.getEmail());
             ps.setString(4, vendorDTO.getPhone());
             ps.setString(5, vendorDTO.getAvailability());
             ps.setString(6, vendorDTO.getStatus());
-            ps.setString(7, vendorDTO.getPassword());
-            ps.setInt(8, vendorDTO.getId());
+            
+            int index = 7;
+            if (updatePassword) {
+                ps.setString(index++, vendorDTO.getPassword());
+            }
+            ps.setInt(index, vendorDTO.getId());
+            
             ps.executeUpdate();
             return vendorDTO;
         } catch (SQLException e) {

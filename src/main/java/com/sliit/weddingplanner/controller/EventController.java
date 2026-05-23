@@ -66,4 +66,13 @@ public class EventController {
         eventService.submitEventReview(eventId, rating, review);
         return ResponseEntity.ok().build();
     }
+
+    @PutMapping("/{eventId}/review")
+    public ResponseEntity<Void> updateReview(
+            @PathVariable int eventId,
+            @RequestParam int rating,
+            @RequestParam String review) {
+        eventService.submitEventReview(eventId, rating, review);
+        return ResponseEntity.ok().build();
+    }
 }

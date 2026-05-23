@@ -33,9 +33,12 @@ public class AdminServiceImpl implements AdminService {
     public AdminDTO updateUser(int id, AdminDTO adminDetails) {
         AdminDTO admin = getUserById(id);
 
-        admin.setName(adminDetails.getName());
-        admin.setUsername(adminDetails.getUsername());
-        admin.setEmail(adminDetails.getEmail());
+        if (adminDetails.getName() != null) admin.setName(adminDetails.getName());
+        if (adminDetails.getUsername() != null) admin.setUsername(adminDetails.getUsername());
+        if (adminDetails.getEmail() != null) admin.setEmail(adminDetails.getEmail());
+        if (adminDetails.getPassword() != null && !adminDetails.getPassword().isBlank()) {
+            admin.setPassword(adminDetails.getPassword());
+        }
 
         return adminRepository.update(admin);
     }

@@ -54,12 +54,12 @@ public class VendorServiceImpl implements VendorService {
     @Override
     public VendorDTO updateUser(int id, VendorDTO user) {
         VendorDTO existing = getUserById(id);
-        existing.setName(user.getName());
-        existing.setUsername(user.getUsername());
-        existing.setEmail(user.getEmail());
-        existing.setPhone(user.getPhone());
-        existing.setAvailability(user.getAvailability());
-        existing.setStatus(user.getStatus());
+        if (user.getName() != null) existing.setName(user.getName());
+        if (user.getUsername() != null) existing.setUsername(user.getUsername());
+        if (user.getEmail() != null) existing.setEmail(user.getEmail());
+        if (user.getPhone() != null) existing.setPhone(user.getPhone());
+        if (user.getAvailability() != null) existing.setAvailability(user.getAvailability());
+        if (user.getStatus() != null) existing.setStatus(user.getStatus());
         if (user.getPassword() != null && !user.getPassword().isBlank()) {
             existing.setPassword(user.getPassword());
         }

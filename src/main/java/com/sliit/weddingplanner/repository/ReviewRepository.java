@@ -27,7 +27,7 @@ public class ReviewRepository {
         String sql = "INSERT INTO review (event_id, customer_id, package_id, package_rating, package_comment) VALUES (?, ?, ?, ?, ?)";
         try (Connection conn = dbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-            
+
             ps.setInt(1, reviewDTO.getEventId());
             if (reviewDTO.getCustomerId() != null) ps.setInt(2, reviewDTO.getCustomerId()); else ps.setNull(2, Types.INTEGER);
             if (reviewDTO.getPackageId() != null) ps.setInt(3, reviewDTO.getPackageId()); else ps.setNull(3, Types.INTEGER);
@@ -61,9 +61,9 @@ public class ReviewRepository {
     public List<ReviewDTO> findAllByVendorId(int vendorId) {
         List<ReviewDTO> list = new ArrayList<>();
         String sql = "SELECT r.*, c.name as customer_name FROM review r " +
-                     "JOIN customer c ON r.customer_id = c.customer_id " +
-                     "JOIN package p ON r.package_id = p.package_id " +
-                     "WHERE p.vendor_id = ?";
+                "JOIN customer c ON r.customer_id = c.customer_id " +
+                "JOIN package p ON r.package_id = p.package_id " +
+                "WHERE p.vendor_id = ?";
         try (Connection conn = dbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, vendorId);
@@ -79,8 +79,8 @@ public class ReviewRepository {
     public List<ReviewDTO> findAllByPackageId(int packageId) {
         List<ReviewDTO> list = new ArrayList<>();
         String sql = "SELECT r.*, c.name as customer_name FROM review r " +
-                     "JOIN customer c ON r.customer_id = c.customer_id " +
-                     "WHERE r.package_id = ?";
+                "JOIN customer c ON r.customer_id = c.customer_id " +
+                "WHERE r.package_id = ?";
         try (Connection conn = dbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, packageId);
@@ -96,7 +96,7 @@ public class ReviewRepository {
     public List<ReviewDTO> findAll() {
         List<ReviewDTO> list = new ArrayList<>();
         String sql = "SELECT r.*, c.name as customer_name FROM review r " +
-                     "JOIN customer c ON r.customer_id = c.customer_id";
+                "JOIN customer c ON r.customer_id = c.customer_id";
         try (Connection conn = dbConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
@@ -118,6 +118,20 @@ public class ReviewRepository {
         }
     }
 
+    public ReviewDTO update(ReviewDTO reviewDTO) {
+        String sql = "UPDATE review SET package_rating = ?, package_comment = ? WHERE review_id = ?";
+        try (Connection conn = dbConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            if (reviewDTO.getPackageRating() != null) ps.setInt(1, reviewDTO.getPackageRating()); else ps.setNull(1, Types.INTEGER);
+            ps.setString(2, reviewDTO.getPackageComment());
+            ps.setInt(3, reviewDTO.getReviewId());
+            ps.executeUpdate();
+            return findById(reviewDTO.getReviewId()).orElse(reviewDTO);
+        } catch (SQLException e) {
+            throw new RuntimeException("Error updating review", e);
+        }
+    }
+
     private ReviewDTO mapRowToReview(ResultSet rs) throws SQLException {
         ReviewDTO dto = new ReviewDTO();
         dto.setReviewId(rs.getInt("review_id"));
@@ -126,7 +140,7 @@ public class ReviewRepository {
         dto.setPackageId(rs.getObject("package_id") != null ? rs.getInt("package_id") : null);
         dto.setPackageRating(rs.getObject("package_rating") != null ? rs.getInt("package_rating") : null);
         dto.setPackageComment(rs.getString("package_comment"));
-        
+
         // Handle optional customer_name from JOIN
         try {
             dto.setCustomerName(rs.getString("customer_name"));

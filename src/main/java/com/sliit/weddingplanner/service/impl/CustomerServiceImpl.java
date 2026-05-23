@@ -49,13 +49,13 @@ public class CustomerServiceImpl implements CustomerService {
     @Override
     public CustomerDTO updateUser(int id, CustomerDTO user) {
         CustomerDTO existing = getUserById(id);
-        existing.setTitle(user.getTitle());
-        existing.setName(user.getName());
-        existing.setUsername(user.getUsername());
-        existing.setCustomerRole(user.getCustomerRole());
-        existing.setOtherPartyName(user.getOtherPartyName());
-        existing.setEmail(user.getEmail());
-        existing.setPhone(user.getPhone());
+        if (user.getTitle() != null) existing.setTitle(user.getTitle());
+        if (user.getName() != null) existing.setName(user.getName());
+        if (user.getUsername() != null) existing.setUsername(user.getUsername());
+        if (user.getCustomerRole() != null) existing.setCustomerRole(user.getCustomerRole());
+        if (user.getOtherPartyName() != null) existing.setOtherPartyName(user.getOtherPartyName());
+        if (user.getEmail() != null) existing.setEmail(user.getEmail());
+        if (user.getPhone() != null) existing.setPhone(user.getPhone());
         if (user.getPassword() != null && !user.getPassword().isBlank()) {
             existing.setPassword(user.getPassword());
         }
@@ -64,7 +64,7 @@ public class CustomerServiceImpl implements CustomerService {
 
     @Override
     public void deleteUser(int id) {
-        getUserById(id); // Throws ResourceNotFoundException if not found
+        getUserById(id);
         customerRepository.delete(id);
     }
 }

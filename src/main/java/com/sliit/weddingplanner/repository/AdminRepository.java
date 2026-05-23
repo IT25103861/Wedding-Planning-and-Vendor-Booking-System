@@ -48,15 +48,26 @@ public class AdminRepository {
     }
 
     public AdminDTO update(AdminDTO adminDTO) {
-        String sql = "UPDATE admin SET name=?, username=?, email=?, role=? WHERE admin_id=?";
+        StringBuilder sql = new StringBuilder("UPDATE admin SET name=?, username=?, email=?, role=?");
+        boolean updatePassword = adminDTO.getPassword() != null && !adminDTO.getPassword().isEmpty();
+        if (updatePassword) {
+            sql.append(", password=?");
+        }
+        sql.append(" WHERE admin_id=?");
+        
         try (Connection conn = dbConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+             PreparedStatement ps = conn.prepareStatement(sql.toString())) {
 
             ps.setString(1, adminDTO.getName());
             ps.setString(2, adminDTO.getUsername());
             ps.setString(3, adminDTO.getEmail());
             ps.setString(4, adminDTO.getRole());
-            ps.setInt(5, adminDTO.getId());
+            
+            int index = 5;
+            if (updatePassword) {
+                ps.setString(index++, adminDTO.getPassword());
+            }
+            ps.setInt(index, adminDTO.getId());
 
             ps.executeUpdate();
             return adminDTO;
